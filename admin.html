@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>内容后台</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7f9;
+      color: #111827;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 20px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 12px;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin: 20px 0 8px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font: inherit;
+      background: #fff;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .92;
+    }
+
+    button.danger {
+      background: #dc2626;
+      margin-top: 0;
+    }
+
+    .image-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 8px;
+      margin: 8px 0;
+      align-items: center;
+    }
+
+    .status {
+      margin: 10px 0 0;
+      color: #4b5563;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .status.error {
+      color: #b91c1c;
+    }
+
+    .hint {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 720px) {
+      .image-row {
+        grid-template-columns: 1fr;
+      }
+
+      button.danger {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>内容后台</h1>
+
+  <section class="card">
+    <h2>GitHub 连接</h2>
+    <p class="hint">
+      使用 Fine-grained Personal Access Token。权限只需要该仓库的
+      Contents: Read and write；Metadata: Read-only。
+    </p>
+
+    <label for="owner">用户名或组织</label>
+    <input id="owner" type="text" placeholder="例如 octocat">
+
+    <label for="repo">仓库名</label>
+    <input id="repo" type="text" placeholder="例如 my-qr-site">
+
+    <label for="branch">分支</label>
+    <input id="branch" type="text" value="main">
+
+    <label for="token">Token</label>
+    <input id="token" type="password" placeholder="github_pat_...">
+
+    <label>
+      <input id="remember" type="checkbox">
+      记住连接信息，Token 会存到 localStorage。只在自己的设备上勾选。
+    </label>
+
+    <button id="connect">连接并读取内容</button>
+    <p id="connStatus" class="status"></p>
+  </section>
+
+  <section class="card">
+    <h2>页面内容</h2>
+
+    <label for="title">标题</label>
+    <input id="title" type="text">
+
+    <label for="text">正文</label>
+    <textarea id="text" rows="8"></textarea>
+
+    <h3>图片</h3>
+    <div id="imageList"></div>
+    <button id="addImage" type="button">添加图片 URL</button>
+
+    <h3>上传图片</h3>
+    <input id="fileInput" type="file" accept="image/*">
+    <p id="uploadStatus" class="status"></p>
+
+    <button id="save">保存到 GitHub</button>
+    <p id="saveStatus" class="status"></p>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+const ownerEl = $('owner');
+const repoEl = $('repo');
+const branchEl = $('branch');
+const tokenEl = $('token');
+const rememberEl = $('remember');
+const connectBtn = $('connect');
+const connStatus = $('connStatus');
+
+const titleEl = $('title');
+const textEl = $('text');
+const imageListEl = $('imageList');
+const addImageBtn = $('addImage');
+const fileInput = $('fileInput');
+const uploadStatus = $('uploadStatus');
+const saveBtn = $('save');
+const saveStatus = $('saveStatus');
+
+let owner = '';
+let repo = '';
+let branch = 'main';
+let token = '';
+let currentSha = null;
+
+function readConfig() {
+  owner = ownerEl.value.trim();
+  repo = repoEl.value.trim();
+  branch = branchEl.value.trim() || 'main';
+  token = tokenEl.value.trim();
+}
+
+function apiUrl(path) {
+  const safePath = String(path).split('/').map(encodeURIComponent).join('/');
+  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${safePath}`;
+}
+
+function headers() {
+  return {
+    'Accept': 'application/vnd.github+json',
+    'Authorization': `Bearer ${token}`,
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+
+async function getErrorMessage(res) {
+  const text = await res.text();
+
+  try {
+    const data = JSON.parse(text);
+    return data.message || text;
+  } catch {
+    return text;
+  }
+}
+
+async function getFile(path) {
+  const res = await fetch(`${apiUrl(path)}?ref=${encodeURIComponent(branch)}`, {
+    headers: headers()
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(await getErrorMessage(res));
+
+  const data = await res.json();
+
+  return {
+    sha: data.sha,
+    text: decodeBase64Unicode(data.content || '')
+  };
+}
+
+async function putTextFile(path, text, message, sha) {
+  const body = {
+    message,
+    content: encodeBase64Unicode(text),
+    branch
+  };
+
+  if (sha) body.sha = sha;
+
+  const res = await fetch(apiUrl(path), {
+    method: 'PUT',
+    headers: {
+      ...headers(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) throw new Error(await getErrorMessage(res));
+
+  return res.json();
+}
+
+async function uploadImage(file) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'image';
+  const path = `images/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+  const content = arrayBufferToBase64(await file.arrayBuffer());
+
+  const res = await fetch(apiUrl(path), {
+    method: 'PUT',
+    headers: {
+      ...headers(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: `Upload ${path}`,
+      content,
+      branch
+    })
+  });
+
+  if (!res.ok) throw new Error(await getErrorMessage(res));
+
+  return path;
+}
+
+function encodeBase64Unicode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  const chunk = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+
+  return btoa(binary);
+}
+
+function decodeBase64Unicode(base64) {
+  const clean = base64.replace(/\s/g, '');
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return new TextDecoder().decode(bytes);
+}
+
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunk = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+
+  return btoa(binary);
+}
+
+function setStatus(el, message, isError = false) {
+  el.textContent = message;
+  el.className = 'status' + (isError ? ' error' : '');
+}
+
+function addImageRow(src = '', alt = '') {
+  const row = document.createElement('div');
+  row.className = 'image-row';
+
+  const srcInput = document.createElement('input');
+  srcInput.type = 'text';
+  srcInput.className = 'img-src';
+  srcInput.placeholder = '图片地址，例如 images/abc.jpg 或 https://...';
+  srcInput.value = src;
+
+  const altInput = document.createElement('input');
+  altInput.type = 'text';
+  altInput.className = 'img-alt';
+  altInput.placeholder = '图片说明，可空';
+  altInput.value = alt;
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'danger';
+  removeBtn.textContent = '删除';
+  removeBtn.addEventListener('click', () => row.remove());
+
+  row.append(srcInput, altInput, removeBtn);
+  imageListEl.appendChild(row);
+}
+
+function fillForm(data) {
+  titleEl.value = data.title || '';
+  textEl.value = data.text || '';
+  imageListEl.innerHTML = '';
+
+  const images = Array.isArray(data.images) ? data.images : [];
+
+  images.forEach(item => {
+    if (!item) return;
+    addImageRow(item.src || '', item.alt || '');
+  });
+}
+
+function collectContent() {
+  const images = [];
+
+  imageListEl.querySelectorAll('.image-row').forEach(row => {
+    const src = row.querySelector('.img-src').value.trim();
+    const alt = row.querySelector('.img-alt').value.trim();
+
+    if (src) images.push({ src, alt });
+  });
+
+  return {
+    title: titleEl.value.trim(),
+    text: textEl.value,
+    images,
+    updatedAt: new Date().toLocaleString('zh-CN', { hour12: false })
+  };
+}
+
+(function initSavedConfig() {
+  const raw = localStorage.getItem('github-admin-config');
+  if (!raw) return;
+
+  try {
+    const cfg = JSON.parse(raw);
+
+    ownerEl.value = cfg.owner || '';
+    repoEl.value = cfg.repo || '';
+    branchEl.value = cfg.branch || 'main';
+    tokenEl.value = cfg.token || '';
+    rememberEl.checked = true;
+  } catch {}
+})();
+
+connectBtn.addEventListener('click', async () => {
+  readConfig();
+
+  if (!owner || !repo || !token) {
+    setStatus(connStatus, '请填写 owner、repo 和 token。', true);
+    return;
+  }
+
+  if (rememberEl.checked) {
+    localStorage.setItem('github-admin-config', JSON.stringify({
+      owner,
+      repo,
+      branch,
+      token
+    }));
+  } else {
+    localStorage.removeItem('github-admin-config');
+  }
+
+  setStatus(connStatus, '正在读取 content.json...');
+
+  try {
+    const file = await getFile('content.json');
+
+    if (file) {
+      const data = JSON.parse(file.text);
+      currentSha = file.sha;
+      fillForm(data);
+      setStatus(connStatus, '读取成功。');
+    } else {
+      currentSha = null;
+      fillForm({
+        title: '扫码查看',
+        text: '这里是我设置好的文字。',
+        images: [],
+        updatedAt: ''
+      });
+      setStatus(connStatus, 'content.json 不存在，点击保存会创建。');
+    }
+  } catch (err) {
+    setStatus(connStatus, '连接失败：' + err.message, true);
+  }
+});
+
+addImageBtn.addEventListener('click', () => addImageRow('', ''));
+
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  readConfig();
+
+  if (!owner || !repo || !token) {
+    setStatus(uploadStatus, '请先填写连接信息并连接。', true);
+    fileInput.value = '';
+    return;
+  }
+
+  try {
+    setStatus(uploadStatus, '正在上传图片...');
+    const path = await uploadImage(file);
+    addImageRow(path, file.name);
+    setStatus(uploadStatus, '图片已上传到仓库。点击“保存到 GitHub”保存内容。');
+  } catch (err) {
+    setStatus(uploadStatus, '上传失败：' + err.message, true);
+  } finally {
+    fileInput.value = '';
+  }
+});
+
+saveBtn.addEventListener('click', async () => {
+  readConfig();
+
+  if (!owner || !repo || !token) {
+    setStatus(saveStatus, '请先填写连接信息并连接。', true);
+    return;
+  }
+
+  try {
+    setStatus(saveStatus, '正在保存...');
+
+    const content = collectContent();
+    const text = JSON.stringify(content, null, 2);
+
+    const result = await putTextFile(
+      'content.json',
+      text,
+      'Update content.json',
+      currentSha
+    );
+
+    currentSha = result.content?.sha || currentSha;
+
+    setStatus(saveStatus, '保存成功。GitHub Pages 可能需要几十秒到几分钟部署。');
+  } catch (err) {
+    setStatus(saveStatus, '保存失败：' + err.message, true);
+  }
+});
+</script>
+</body>
+</html>
