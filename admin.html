@@ -220,7 +220,9 @@
 
 <script>
 const $ = (id) => document.getElementById(id);
-
+const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+const logsPwdEl = $('logsPwd');
+  
 const ownerEl = $('owner');
 const repoEl = $('repo');
 const branchEl = $('branch');
@@ -633,9 +635,9 @@ loadCommentsBtn.addEventListener('click', async () => {
   }
 });
   /* ========== 访问记录 ========== */
-const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
 
-const logsPwdEl = $('logsPwd');
+
+
 const loadLogsBtn = $('loadLogs');
 const clearLogsBtn = $('clearLogs');
 const logStatusEl = $('logStatus');
@@ -708,7 +710,7 @@ loadLogsBtn.addEventListener('click', async () => {
       logListEl.appendChild(formatLogItem(item));
     });
 
-    setStatus(logStatusEl, `共 ${logs.length} 条记录。');
+    setStatus(logStatusEl, `共 ${logs.length} 条记录。`);
   } catch (err) {
     setStatus(logStatusEl, '加载失败：' + err.message, true);
   }
