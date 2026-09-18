@@ -281,7 +281,7 @@ async function loadComments() {
     commentListEl.innerHTML = '';
 
     if (!comments.length) {
-      commentListEl.innerHTML = '<p class="comment-empty">还没有留言，来抢沙发吧。</p>';
+      commentListEl.innerHTML = '<p class="comment-empty">感谢留言喵。</p>';
       return;
     }
 
@@ -332,6 +332,23 @@ commentFormEl.addEventListener('submit', async (e) => {
 });
 
 loadComments();
+</script>
+
+<script>
+(function reportVisit() {
+  const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+
+  fetch(WORKER_URL + '/log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      referer: document.referrer || '',
+      language: navigator.language || '',
+      screenSize: window.screen.width + 'x' + window.screen.height,
+      page: location.href
+    })
+  }).catch(() => {});
+})();
 </script>
 </body>
 </html>
