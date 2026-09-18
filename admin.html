@@ -154,6 +154,16 @@
   </section>
 
   <section class="card">
+    <h2>评论管理</h2>
+    <p class="hint">
+      查看和删除访客留言。密码与日志密码相同。
+    </p>
+
+    <button id="loadCommentsBtn">加载评论</button>
+    <p id="commentAdminStatus" class="status"></p>
+    <div id="commentAdminList" style="margin-top:16px;"></div>
+  </section>
+  <section class="card">
     <h2>页面内容</h2>
 
     <label for="title">标题</label>
@@ -503,6 +513,90 @@ saveBtn.addEventListener('click', async () => {
     setStatus(saveStatus, '保存成功。GitHub Pages 可能需要几十秒到几分钟部署。');
   } catch (err) {
     setStatus(saveStatus, '保存失败：' + err.message, true);
+  }
+});
+  
+/* ========== 评论管理 ========== */
+const loadCommentsBtn = $('loadCommentsBtn');
+const commentAdminStatusEl = $('commentAdminStatus');
+const commentAdminListEl = $('commentAdminList');
+
+function renderAdminComment(c) {
+  const div = document.createElement('div');
+  div.className = 'log-item';
+
+  const head = document.createElement('div');
+  head.className = 'log-time';
+  head.textContent = `${c.name || '匿名访客'} · ${c.localTime || ''}`;
+
+  const text = document.createElement('div');
+  text.className = 'log-meta';
+  text.style.color = '#111827';
+  text.style.fontSize = '14px';
+  text.style.marginTop = '6px';
+  text.textContent = c.text || '';
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'danger';
+  delBtn.style.marginTop = '8px';
+  delBtn.textContent = '删除';
+
+  delBtn.addEventListener('click', async () => {
+    const pwd = logsPwdEl.value.trim();
+
+    if (!pwd) {
+      alert('请先在上面填写日志密码。');
+      return;
+    }
+
+    if (!confirm('确定删除这条评论？')) return;
+
+    try {
+      const res = await fetch(
+        `${WORKER_URL}/comment/delete?pwd=${encodeURIComponent(pwd)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: c.id })
+        }
+      );
+
+      if (res.status === 401) { alert('密码错误。'); return; }
+      if (!res.ok) { alert('删除失败。'); return; }
+
+      div.remove();
+    } catch (err) {
+      alert('删除失败：' + err.message);
+    }
+  });
+
+  div.append(head, text, delBtn);
+  return div;
+}
+
+loadCommentsBtn.addEventListener('click', async () => {
+  setStatus(commentAdminStatusEl, '正在加载...');
+  commentAdminListEl.innerHTML = '';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/comments?_=${Date.now()}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const comments = await res.json();
+
+    if (!comments.length) {
+      setStatus(commentAdminStatusEl, '还没有评论。');
+      return;
+    }
+
+    comments.forEach(c => {
+      commentAdminListEl.appendChild(renderAdminComment(c));
+    });
+
+    setStatus(commentAdminStatusEl, `共 ${comments.length} 条评论。`);
+  } catch (err) {
+    setStatus(commentAdminStatusEl, '加载失败：' + err.message, true);
   }
 });
 </script>
