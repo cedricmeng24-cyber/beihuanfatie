@@ -71,6 +71,91 @@
       color: #991b1b;
       border-radius: 12px;
     }
+        .comments {
+      margin-top: 48px;
+      padding-top: 28px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .comments h2 {
+      font-size: 22px;
+      margin: 0 0 16px;
+    }
+
+    #commentForm {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    #commentForm input,
+    #commentForm textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font: inherit;
+      background: #fff;
+      resize: vertical;
+    }
+
+    .comment-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .comment-actions button {
+      padding: 8px 20px;
+      border: 0;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .comment-actions button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #commentStatus {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .comment-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+
+    .comment-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .comment-name {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .comment-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 15px;
+    }
+
+    .comment-empty {
+      color: #9ca3af;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -79,6 +164,18 @@
   <div id="text" class="text"></div>
   <div id="images" class="images"></div>
   <div id="updated" class="updated"></div>
+  <section class="comments">
+    <h2>留言</h2>
+    <form id="commentForm">
+      <input id="commentName" type="text" maxlength="20" placeholder="昵称（可不填）">
+      <textarea id="commentText" maxlength="500" rows="3" placeholder="说点什么..." required></textarea>
+      <div class="comment-actions">
+        <button type="submit" id="commentSubmit">发送</button>
+        <span id="commentStatus"></span>
+      </div>
+    </form>
+    <div id="commentList" class="comment-list">正在加载留言...</div>
+  </section>
 </main>
 
 <script>
@@ -141,6 +238,100 @@ async function loadContent() {
 }
 
 loadContent();
+/* ========== 评论 ========== */
+const WORKER_URL = 'https://visit-logger.你的用户名.workers.dev';
+
+const commentListEl = document.getElementById('commentList');
+const commentFormEl = document.getElementById('commentForm');
+const commentNameEl = document.getElementById('commentName');
+const commentTextEl = document.getElementById('commentText');
+const commentSubmitEl = document.getElementById('commentSubmit');
+const commentStatusEl = document.getElementById('commentStatus');
+
+function renderComment(c) {
+  const div = document.createElement('div');
+  div.className = 'comment-item';
+
+  const head = document.createElement('div');
+  head.className = 'comment-head';
+
+  const name = document.createElement('span');
+  name.className = 'comment-name';
+  name.textContent = c.name || '匿名访客';
+
+  const time = document.createElement('span');
+  time.textContent = c.localTime || '';
+
+  head.append(name, time);
+
+  const text = document.createElement('div');
+  text.className = 'comment-text';
+  text.textContent = c.text || '';
+
+  div.append(head, text);
+  return div;
+}
+
+async function loadComments() {
+  try {
+    const res = await fetch(`${WORKER_URL}/comments?_=${Date.now()}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const comments = await res.json();
+    commentListEl.innerHTML = '';
+
+    if (!comments.length) {
+      commentListEl.innerHTML = '<p class="comment-empty">还没有留言，来抢沙发吧。</p>';
+      return;
+    }
+
+    comments.forEach(c => commentListEl.appendChild(renderComment(c)));
+  } catch (e) {
+    commentListEl.innerHTML = '<p class="comment-empty">留言加载失败。</p>';
+  }
+}
+
+commentFormEl.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const text = commentTextEl.value.trim();
+  if (!text) return;
+
+  commentSubmitEl.disabled = true;
+  commentStatusEl.textContent = '发送中...';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/comment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: commentNameEl.value.trim(),
+        text
+      })
+    });
+
+    if (res.status === 429) {
+      commentStatusEl.textContent = '发送太频繁，稍后再试。';
+      return;
+    }
+
+    if (!res.ok) {
+      commentStatusEl.textContent = '发送失败。';
+      return;
+    }
+
+    commentTextEl.value = '';
+    commentStatusEl.textContent = '已发送。';
+    await loadComments();
+  } catch (err) {
+    commentStatusEl.textContent = '发送失败：' + err.message;
+  } finally {
+    commentSubmitEl.disabled = false;
+    setTimeout(() => { commentStatusEl.textContent = ''; }, 3000);
+  }
+});
+
+loadComments();
 </script>
 </body>
 </html>
