@@ -1,111 +1,55 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>内容后台</title>
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f6f7f9;
-      color: #111827;
-      line-height: 1.6;
-    }
-
-    main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
-
-    h1 { font-size: 28px; margin: 0 0 20px; }
-    h2 { font-size: 20px; margin: 0 0 12px; }
-    h3 { font-size: 16px; margin: 20px 0 8px; }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.06);
-    }
-
-    label { display: block; margin: 12px 0 6px; font-weight: 600; }
-
-    input[type="text"],
-    input[type="password"],
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font: inherit;
-      background: #fff;
-    }
-
-    textarea { resize: vertical; }
-
-    button {
-      margin-top: 14px;
-      padding: 10px 16px;
-      border: 0;
-      border-radius: 10px;
-      background: #111827;
-      color: #fff;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    button:hover { opacity: .92; }
-    button.danger { background: #dc2626; margin-top: 0; }
-
-    .image-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr auto;
-      gap: 8px;
-      margin: 8px 0;
-      align-items: center;
-    }
-
-    .status {
-      margin: 10px 0 0;
-      color: #4b5563;
-      font-size: 14px;
-      white-space: pre-wrap;
-    }
-
-    .status.error { color: #b91c1c; }
-    .hint { color: #6b7280; font-size: 13px; line-height: 1.6; }
-
-    .log-item {
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      background: #f9fafb;
-      border-radius: 10px;
-      font-size: 14px;
-      border-left: 3px solid #111827;
-      word-break: break-all;
-    }
-
-    .log-item .log-time { font-weight: 700; color: #111827; }
-    .log-item .log-meta { color: #6b7280; font-size: 13px; margin-top: 4px; }
-
-    #errorBanner {
-      display: none;
-      margin-bottom: 16px;
-      padding: 14px 16px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      border-radius: 12px;
-      font-size: 14px;
-      white-space: pre-wrap;
-    }
-
-    @media (max-width: 720px) {
-      .image-row { grid-template-columns: 1fr; }
-      button.danger { width: 100%; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>内容后台</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f6f7f9; color: #111827; line-height: 1.6;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 26px; margin: 0 0 20px; }
+  h2 { font-size: 19px; margin: 0 0 12px; }
+  h3 { font-size: 15px; margin: 18px 0 8px; }
+  .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+  label { display: block; margin: 12px 0 6px; font-weight: 600; }
+  input[type="text"], input[type="password"], textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+    border-radius: 10px; font: inherit; background: #fff;
+  }
+  textarea { resize: vertical; }
+  button {
+    margin-top: 14px; padding: 9px 16px; border: 0; border-radius: 10px;
+    background: #111827; color: #fff; font: inherit; cursor: pointer;
+  }
+  button:hover { opacity: .92; }
+  button.danger { background: #dc2626; }
+  button.ghost { background: #e5e7eb; color: #111827; margin-top: 0; }
+  button.small { padding: 6px 12px; font-size: 13px; margin-top: 0; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+  .btn-row button { margin-top: 0; }
+  .image-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin: 8px 0; align-items: center; }
+  .status { margin: 10px 0 0; color: #4b5563; font-size: 14px; white-space: pre-wrap; }
+  .status.error { color: #b91c1c; }
+  .hint { color: #6b7280; font-size: 13px; line-height: 1.6; }
+  .list-item { padding: 12px 14px; margin-bottom: 8px; background: #f9fafb; border-radius: 10px; font-size: 14px; border-left: 3px solid #111827; word-break: break-all; }
+  .list-time { font-weight: 700; color: #111827; }
+  .list-meta { color: #6b7280; font-size: 13px; margin-top: 4px; }
+  .month-head { margin: 18px 0 8px; font-weight: 700; color: #374151; font-size: 14px; }
+  #errorBanner {
+    display: none; margin-bottom: 16px; padding: 14px 16px;
+    background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+    border-radius: 12px; font-size: 14px; white-space: pre-wrap;
+  }
+  @media (max-width: 720px) {
+    .image-row { grid-template-columns: 1fr; }
+    button.danger { width: 100%; }
+  }
+</style>
 </head>
 <body>
 <main>
@@ -113,10 +57,18 @@
   <h1>内容后台</h1>
 
   <section class="card">
+    <h2>管理密码</h2>
+    <p class="hint">Worker 里设置的 LOGS_PASSWORD。删评论、看访问记录、清空记录都要用它。</p>
+    <label for="adminPwd">密码</label>
+    <input id="adminPwd" type="password" placeholder="LOGS_PASSWORD">
+  </section>
+
+  <section class="card">
     <h2>GitHub 连接</h2>
     <p class="hint">
-      使用 Fine-grained Personal Access Token。权限只需要该仓库的
-      Contents: Read and write；Metadata: Read-only。
+      Fine-grained Personal Access Token，权限只需该仓库的
+      Contents: Read and write、Metadata: Read-only。
+      保存前会自动查最新 sha，不用每次先点连接。
     </p>
 
     <label for="owner">用户名或组织</label>
@@ -133,66 +85,70 @@
 
     <label>
       <input id="remember" type="checkbox">
-      记住连接信息，Token 会存到 localStorage。只在自己的设备上勾选。
+      记住连接信息（Token 会存到 localStorage，只在自己的设备上勾选）
     </label>
 
-    <button id="connect">连接并读取内容</button>
+    <button id="connect">连接并读取</button>
     <p id="connStatus" class="status"></p>
   </section>
 
   <section class="card">
-    <h2>Worker 诊断</h2>
-    <p class="hint">
-      检查 Cloudflare Worker 是否正常。正常会返回 HTTP 200 和 JSON（新站点是 []）。
-    </p>
-    <button id="pingWorker">检查 Worker 状态</button>
-    <p id="pingStatus" class="status"></p>
+    <h2>文章管理</h2>
+    <p class="hint">按月归档。点标题编辑，点「打开」看前台效果。</p>
+
+    <div class="btn-row">
+      <button id="newPostBtn">新建文章</button>
+      <button id="rebuildIndexBtn" class="ghost">重建索引</button>
+      <button id="importLegacyBtn" class="ghost">从 content.json 导入</button>
+      <button id="refreshListBtn" class="ghost">刷新列表</button>
+    </div>
+
+    <p id="postListStatus" class="status"></p>
+    <div id="postList"></div>
   </section>
 
   <section class="card">
-    <h2>评论管理</h2>
-    <p class="hint">
-      查看和删除访客留言。删除需要下面的日志密码。
-    </p>
-    <button id="loadCommentsBtn">加载评论</button>
-    <p id="commentAdminStatus" class="status"></p>
-    <div id="commentAdminList" style="margin-top:16px;"></div>
-  </section>
-
-  <section class="card">
-    <h2>访问记录</h2>
-    <p class="hint">
-      每次有人打开公开页，就会记录一条。包括时间、IP、国家地区、浏览器。
-    </p>
-
-    <label for="logsPwd">日志密码</label>
-    <input id="logsPwd" type="password" placeholder="你在 Worker 里设置的 LOGS_PASSWORD">
-
-    <button id="loadLogs">加载访问记录</button>
-    <button id="clearLogs" class="danger" style="margin-left:8px;">清空记录</button>
-    <p id="logStatus" class="status"></p>
-    <div id="logList" style="margin-top:16px;"></div>
-  </section>
-
-  <section class="card">
-    <h2>页面内容</h2>
+    <h2>文章编辑</h2>
+    <p id="editHint" class="hint">当前：新建文章</p>
 
     <label for="title">标题</label>
     <input id="title" type="text">
 
     <label for="text">正文</label>
-    <textarea id="text" rows="8"></textarea>
+    <textarea id="text" rows="10"></textarea>
 
     <h3>图片</h3>
     <div id="imageList"></div>
-    <button id="addImage" type="button">添加图片 URL</button>
+    <button id="addImage" type="button" class="ghost">添加图片 URL</button>
 
     <h3>上传图片</h3>
     <input id="fileInput" type="file" accept="image/*">
     <p id="uploadStatus" class="status"></p>
 
-    <button id="save">保存到 GitHub</button>
-    <p id="saveStatus" class="status"></p>
+    <div class="btn-row">
+      <button id="savePostBtn">保存文章</button>
+      <button id="cancelEditBtn" class="ghost">清空/新建</button>
+    </div>
+    <p id="savePostStatus" class="status"></p>
+  </section>
+
+  <section class="card">
+    <h2>评论管理</h2>
+    <p class="hint">加载全部评论，按文章分组。删除需要上面的管理密码。</p>
+    <button id="loadCommentsBtn">加载全部评论</button>
+    <p id="commentAdminStatus" class="status"></p>
+    <div id="commentAdminList"></div>
+  </section>
+
+  <section class="card">
+    <h2>访问记录</h2>
+    <p class="hint">有人在公开页打开时会记录一条。需要管理密码。</p>
+    <div class="btn-row">
+      <button id="loadLogs">加载访问记录</button>
+      <button id="clearLogs" class="danger">清空记录</button>
+    </div>
+    <p id="logStatus" class="status"></p>
+    <div id="logList"></div>
   </section>
 </main>
 
@@ -201,63 +157,75 @@
   'use strict';
 
   var WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+  var SITE_BASE = location.href.replace(/admin\.html.*$/, '');
 
   function $(id) { return document.getElementById(id); }
 
   var errorBanner = $('errorBanner');
 
   function showFatal(msg) {
-    if (!errorBanner) return;
     errorBanner.textContent = '脚本错误：' + msg;
     errorBanner.style.display = 'block';
   }
 
-  window.addEventListener('error', function (e) {
-    showFatal(e.message || '未知错误');
-  });
-
+  window.addEventListener('error', function (e) { showFatal(e.message || '未知错误'); });
   window.addEventListener('unhandledrejection', function (e) {
-    var r = e.reason;
-    showFatal((r && r.message) ? r.message : String(r));
+    showFatal((e.reason && e.reason.message) ? e.reason.message : String(e.reason));
   });
 
   function need(id) {
-    var el = $(id);
-    if (!el) throw new Error('页面缺少元素 #' + id + '，HTML 与 JS 版本不一致');
-    return el;
+    var elx = $(id);
+    if (!elx) throw new Error('页面缺少元素 #' + id);
+    return elx;
   }
 
-  function setStatus(el, message, isError) {
-    if (!el) return;
-    el.textContent = message;
-    el.className = 'status' + (isError ? ' error' : '');
+  function setStatus(elx, message, isError) {
+    if (!elx) return;
+    elx.textContent = message;
+    elx.className = 'status' + (isError ? ' error' : '');
   }
 
-  function fetchWithTimeout(url, options, ms) {
-    var opts = options || {};
+  async function fetchT(url, opts, ms) {
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, ms || 20000);
-    opts.signal = ctrl.signal;
-
-    return fetch(url, opts).then(function (res) {
-      clearTimeout(timer);
-      return res;
-    }, function (err) {
-      clearTimeout(timer);
-      if (err && err.name === 'AbortError') {
-        throw new Error('请求超时，对方没有响应');
-      }
+    var options = Object.assign({}, opts || {}, { signal: ctrl.signal });
+    try {
+      return await fetch(url, options);
+    } catch (err) {
+      if (err && err.name === 'AbortError') throw new Error('请求超时');
       throw err;
-    });
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
-  try {
-    boot();
-  } catch (err) {
-    showFatal((err && err.message) ? err.message : String(err));
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function makeId(d) {
+    return '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) +
+      pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
   }
+
+  function formatDate(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function monthOf(id) {
+    return String(id).slice(0, 4) + '-' + String(id).slice(4, 6);
+  }
+
+  function monthLabel(m) {
+    var parts = String(m).split('-');
+    if (parts.length !== 2) return '未归档';
+    return parts[0] + '年' + Number(parts[1]) + '月';
+  }
+
+  try { boot(); } catch (err) { showFatal(err.message || String(err)); }
 
   function boot() {
+    var adminPwdEl = need('adminPwd');
+
     var ownerEl = need('owner');
     var repoEl = need('repo');
     var branchEl = need('branch');
@@ -266,35 +234,38 @@
     var connectBtn = need('connect');
     var connStatus = need('connStatus');
 
+    var newPostBtn = need('newPostBtn');
+    var rebuildIndexBtn = need('rebuildIndexBtn');
+    var importLegacyBtn = need('importLegacyBtn');
+    var refreshListBtn = need('refreshListBtn');
+    var postListStatus = need('postListStatus');
+    var postListEl = need('postList');
+
+    var editHint = need('editHint');
     var titleEl = need('title');
     var textEl = need('text');
     var imageListEl = need('imageList');
     var addImageBtn = need('addImage');
     var fileInput = need('fileInput');
     var uploadStatus = need('uploadStatus');
-    var saveBtn = need('save');
-    var saveStatus = need('saveStatus');
-
-    var pingBtn = need('pingWorker');
-    var pingStatusEl = need('pingStatus');
+    var savePostBtn = need('savePostBtn');
+    var cancelEditBtn = need('cancelEditBtn');
+    var savePostStatus = need('savePostStatus');
 
     var loadCommentsBtn = need('loadCommentsBtn');
-    var commentAdminStatusEl = need('commentAdminStatus');
-    var commentAdminListEl = need('commentAdminList');
+    var commentAdminStatus = need('commentAdminStatus');
+    var commentAdminList = need('commentAdminList');
 
-    var logsPwdEl = need('logsPwd');
-    var loadLogsBtn = need('loadLogs');
-    var clearLogsBtn = need('clearLogs');
-    var logStatusEl = need('logStatus');
-    var logListEl = need('logList');
+    var loadLogs = need('loadLogs');
+    var clearLogs = need('clearLogs');
+    var logStatus = need('logStatus');
+    var logList = need('logList');
 
-    var owner = '';
-    var repo = '';
-    var branch = 'main';
-    var token = '';
-    var currentSha = null;
+    var owner = '', repo = '', branch = 'main', token = '';
+    var posts = [];
+    var currentPostId = '';
 
-    /* ---------- GitHub 基础 ---------- */
+    /* ---------- GitHub 底层 ---------- */
 
     function readConfig() {
       owner = ownerEl.value.trim();
@@ -303,11 +274,17 @@
       token = tokenEl.value.trim();
     }
 
+    function requireConfig() {
+      readConfig();
+      if (!owner || !repo || !token) {
+        throw new Error('请先填写 owner、repo、token');
+      }
+    }
+
     function apiUrl(path) {
-      var safePath = String(path).split('/').map(encodeURIComponent).join('/');
-      return 'https://api.github.com/repos/' +
-        encodeURIComponent(owner) + '/' +
-        encodeURIComponent(repo) + '/contents/' + safePath;
+      var safe = String(path).split('/').map(encodeURIComponent).join('/');
+      return 'https://api.github.com/repos/' + encodeURIComponent(owner) +
+        '/' + encodeURIComponent(repo) + '/contents/' + safe;
     }
 
     function ghHeaders() {
@@ -318,15 +295,23 @@
       };
     }
 
-    function getErrorMessage(res) {
-      return res.text().then(function (text) {
-        try {
-          var data = JSON.parse(text);
-          return data.message || text;
-        } catch (e) {
-          return text;
-        }
-      });
+    function ghJsonHeaders() {
+      return {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': 'Bearer ' + token,
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function getErrorMessage(res) {
+      var t = await res.text();
+      try {
+        var data = JSON.parse(t);
+        return data.message || t;
+      } catch (e) {
+        return t;
+      }
     }
 
     function encodeBase64Unicode(str) {
@@ -343,9 +328,7 @@
       var clean = base64.replace(/\s/g, '');
       var binary = atob(clean);
       var bytes = new Uint8Array(binary.length);
-      for (var i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
+      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       return new TextDecoder().decode(bytes);
     }
 
@@ -359,76 +342,100 @@
       return btoa(binary);
     }
 
-    function getFile(path) {
-      return fetchWithTimeout(
-        apiUrl(path) + '?ref=' + encodeURIComponent(branch),
-        { headers: ghHeaders() },
-        20000
-      ).then(function (res) {
-        if (res.status === 404) return null;
-        if (!res.ok) {
-          return getErrorMessage(res).then(function (m) { throw new Error(m); });
-        }
-        return res.json().then(function (data) {
-          return { sha: data.sha, text: decodeBase64Unicode(data.content || '') };
-        });
-      });
+    async function getFile(path) {
+      var res = await fetchT(apiUrl(path) + '?ref=' + encodeURIComponent(branch), { headers: ghHeaders() }, 20000);
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(await getErrorMessage(res));
+      var data = await res.json();
+      return { sha: data.sha, text: decodeBase64Unicode(data.content || '') };
     }
 
-    function putTextFile(path, text, message, sha) {
-      var body = {
-        message: message,
-        content: encodeBase64Unicode(text),
-        branch: branch
-      };
+    async function putTextFile(path, text, message, sha) {
+      var body = { message: message, content: encodeBase64Unicode(text), branch: branch };
       if (sha) body.sha = sha;
 
-      return fetchWithTimeout(apiUrl(path), {
+      var res = await fetchT(apiUrl(path), {
         method: 'PUT',
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': 'Bearer ' + token,
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json'
-        },
+        headers: ghJsonHeaders(),
         body: JSON.stringify(body)
-      }, 30000).then(function (res) {
-        if (!res.ok) {
-          return getErrorMessage(res).then(function (m) { throw new Error(m); });
-        }
-        return res.json();
-      });
+      }, 30000);
+
+      if (!res.ok) throw new Error(await getErrorMessage(res));
+      return res.json();
     }
 
-    function uploadImage(file) {
-      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'image';
-      var path = 'images/' + Date.now() + '-' +
-        Math.random().toString(36).slice(2, 8) + '-' + safeName;
+    async function deleteFile(path, message, sha) {
+      var res = await fetchT(apiUrl(path), {
+        method: 'DELETE',
+        headers: ghJsonHeaders(),
+        body: JSON.stringify({ message: message, sha: sha, branch: branch })
+      }, 20000);
 
-      return file.arrayBuffer().then(function (buf) {
-        return fetchWithTimeout(apiUrl(path), {
-          method: 'PUT',
-          headers: {
-            'Accept': 'application/vnd.github+json',
-            'Authorization': 'Bearer ' + token,
-            'X-GitHub-Api-Version': '2022-11-28',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: 'Upload ' + path,
-            content: arrayBufferToBase64(buf),
-            branch: branch
-          })
-        }, 60000);
-      }).then(function (res) {
-        if (!res.ok) {
-          return getErrorMessage(res).then(function (m) { throw new Error(m); });
-        }
-        return path;
-      });
+      if (!res.ok) throw new Error(await getErrorMessage(res));
+      return res.json();
     }
 
-    /* ---------- 表单 ---------- */
+    async function listDir(path) {
+      var res = await fetchT(apiUrl(path) + '?ref=' + encodeURIComponent(branch), { headers: ghHeaders() }, 20000);
+      if (res.status === 404) return [];
+      if (!res.ok) throw new Error(await getErrorMessage(res));
+      var data = await res.json();
+      return Array.isArray(data) ? data : [];
+    }
+
+    /* ---------- 索引读写 ---------- */
+
+    async function readIndex() {
+      var file = await getFile('posts/index.json');
+      if (!file) return { list: [], sha: null };
+
+      var list;
+      try { list = JSON.parse(file.text); } catch (e) { list = []; }
+      if (!Array.isArray(list)) list = [];
+
+      return { list: list, sha: file.sha };
+    }
+
+    async function writeIndex(list) {
+      list.sort(function (a, b) { return String(b.id).localeCompare(String(a.id)); });
+      var file = await getFile('posts/index.json');
+      await putTextFile(
+        'posts/index.json',
+        JSON.stringify(list, null, 2),
+        'Update posts index',
+        file ? file.sha : null
+      );
+      posts = list;
+    }
+
+    function summaryOf(text) {
+      var s = String(text || '').replace(/\s+/g, ' ').trim();
+      return s.length > 60 ? s.slice(0, 60) + '…' : s;
+    }
+
+    function indexEntryFromPost(post) {
+      return {
+        id: post.id,
+        title: post.title || '',
+        date: post.date || '',
+        month: monthOf(post.id),
+        summary: summaryOf(post.text)
+      };
+    }
+
+    async function upsertIndex(post) {
+      var idx = await readIndex();
+      var list = idx.list.filter(function (x) { return x && x.id !== post.id; });
+      list.push(indexEntryFromPost(post));
+      await writeIndex(list);
+    }
+
+    async function removeFromIndex(id) {
+      var idx = await readIndex();
+      await writeIndex(idx.list.filter(function (x) { return x && x.id !== id; }));
+    }
+
+    /* ---------- 文章表单 ---------- */
 
     function addImageRow(src, alt) {
       var row = document.createElement('div');
@@ -437,7 +444,7 @@
       var srcInput = document.createElement('input');
       srcInput.type = 'text';
       srcInput.className = 'img-src';
-      srcInput.placeholder = '图片地址，例如 images/abc.jpg 或 https://...';
+      srcInput.placeholder = '图片地址，例如 images/abc.jpg';
       srcInput.value = src || '';
 
       var altInput = document.createElement('input');
@@ -448,26 +455,17 @@
 
       var removeBtn = document.createElement('button');
       removeBtn.type = 'button';
-      removeBtn.className = 'danger';
+      removeBtn.className = 'danger small';
       removeBtn.textContent = '删除';
       removeBtn.addEventListener('click', function () { row.remove(); });
 
-      row.append(srcInput, altInput, removeBtn);
+      row.appendChild(srcInput);
+      row.appendChild(altInput);
+      row.appendChild(removeBtn);
       imageListEl.appendChild(row);
     }
 
-    function fillForm(data) {
-      titleEl.value = data.title || '';
-      textEl.value = data.text || '';
-      imageListEl.innerHTML = '';
-      var images = Array.isArray(data.images) ? data.images : [];
-      images.forEach(function (item) {
-        if (!item) return;
-        addImageRow(item.src || '', item.alt || '');
-      });
-    }
-
-    function collectContent() {
+    function collectImages() {
       var images = [];
       var rows = imageListEl.querySelectorAll('.image-row');
       Array.prototype.forEach.call(rows, function (row) {
@@ -475,13 +473,493 @@
         var alt = row.querySelector('.img-alt').value.trim();
         if (src) images.push({ src: src, alt: alt });
       });
+      return images;
+    }
 
-      return {
-        title: titleEl.value.trim(),
-        text: textEl.value,
-        images: images,
-        updatedAt: new Date().toLocaleString('zh-CN', { hour12: false })
-      };
+    function fillEditor(post) {
+      titleEl.value = post.title || '';
+      textEl.value = post.text || '';
+      imageListEl.innerHTML = '';
+      var imgs = Array.isArray(post.images) ? post.images : [];
+      imgs.forEach(function (item) {
+        if (!item) return;
+        addImageRow(item.src || '', item.alt || '');
+      });
+    }
+
+    function startNew() {
+      currentPostId = '';
+      fillEditor({ title: '', text: '', images: [] });
+      editHint.textContent = '当前：新建文章（保存时会生成一个按时间排序的 ID）';
+      savePostStatus.textContent = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function startEdit(id) {
+      requireConfig();
+      setStatus(savePostStatus, '正在读取文章...');
+      try {
+        var file = await getFile('posts/' + id + '.json');
+        if (!file) throw new Error('文章文件不存在，试试「重建索引」');
+
+        var post;
+        try { post = JSON.parse(file.text); } catch (e) { throw new Error('文章文件不是合法 JSON'); }
+
+        currentPostId = id;
+        fillEditor(post);
+        editHint.textContent = '当前：编辑 ' + id + '（' + (post.date || '') + '）';
+        setStatus(savePostStatus, '已载入，可以修改后保存。');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        setStatus(savePostStatus, '读取失败：' + err.message, true);
+      }
+    }
+
+    async function saveCurrent() {
+      requireConfig();
+      setStatus(savePostStatus, '正在保存...');
+
+      try {
+        var isNew = !currentPostId;
+        var id = currentPostId || makeId(new Date());
+        var path = 'posts/' + id + '.json';
+
+        var existing = await getFile(path);
+
+        if (isNew && existing) {
+          id = id + '-' + Math.random().toString(36).slice(2, 6);
+          path = 'posts/' + id + '.json';
+          existing = null;
+        }
+
+        var post = {
+          id: id,
+          title: titleEl.value.trim(),
+          text: textEl.value,
+          images: collectImages(),
+          date: formatDate(new Date())
+        };
+
+        await putTextFile(path, JSON.stringify(post, null, 2), 'Save post ' + id, existing ? existing.sha : null);
+        await upsertIndex(post);
+
+        currentPostId = id;
+        editHint.textContent = '当前：编辑 ' + id;
+        await refreshList();
+
+        setStatus(savePostStatus, '保存成功。GitHub Pages 需要几十秒到几分钟才会更新前台。');
+      } catch (err) {
+        setStatus(savePostStatus, '保存失败：' + err.message, true);
+      }
+    }
+
+    async function deletePost(id) {
+      requireConfig();
+
+      if (!confirm('确定删除文章 ' + id + '？评论还会留在后台，需另外清理。')) return;
+
+      try {
+        var file = await getFile('posts/' + id + '.json');
+        if (!file) throw new Error('文章文件不存在');
+
+        await deleteFile('posts/' + id + '.json', 'Delete post ' + id, file.sha);
+        await removeFromIndex(id);
+
+        if (currentPostId === id) startNew();
+
+        await refreshList();
+      } catch (err) {
+        alert('删除失败：' + err.message);
+      }
+    }
+
+    /* ---------- 文章列表 ---------- */
+
+    function renderPostRow(p) {
+      var div = document.createElement('div');
+      div.className = 'list-item';
+
+      var t = document.createElement('div');
+      t.className = 'list-time';
+      t.textContent = p.title || '(无标题)';
+
+      var meta = document.createElement('div');
+      meta.className = 'list-meta';
+      meta.textContent = (p.date || '') + ' · ID ' + p.id;
+
+      var row = document.createElement('div');
+      row.className = 'btn-row';
+
+      var editBtn = document.createElement('button');
+      editBtn.className = 'small';
+      editBtn.textContent = '编辑';
+      editBtn.addEventListener('click', function () { startEdit(p.id); });
+
+      var openBtn = document.createElement('button');
+      openBtn.className = 'ghost small';
+      openBtn.textContent = '打开';
+      openBtn.addEventListener('click', function () {
+        window.open(SITE_BASE + '?p=' + encodeURIComponent(p.id), '_blank');
+      });
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'danger small';
+      delBtn.textContent = '删除';
+      delBtn.addEventListener('click', function () { deletePost(p.id); });
+
+      row.appendChild(editBtn);
+      row.appendChild(openBtn);
+      row.appendChild(delBtn);
+
+      div.appendChild(t);
+      div.appendChild(meta);
+      div.appendChild(row);
+      return div;
+    }
+
+    function renderPostList() {
+      postListEl.innerHTML = '';
+
+      if (!posts.length) {
+        postListEl.innerHTML = '<p class="hint">还没有文章。点「新建文章」开始。</p>';
+        return;
+      }
+
+      var groups = {};
+      var order = [];
+
+      posts.forEach(function (p) {
+        var m = p.month || monthOf(p.id);
+        if (!groups[m]) { groups[m] = []; order.push(m); }
+        groups[m].push(p);
+      });
+
+      order.sort().reverse();
+
+      order.forEach(function (m) {
+        var head = document.createElement('div');
+        head.className = 'month-head';
+        head.textContent = monthLabel(m) + '（' + groups[m].length + '）';
+        postListEl.appendChild(head);
+
+        groups[m].forEach(function (p) {
+          postListEl.appendChild(renderPostRow(p));
+        });
+      });
+    }
+
+    async function refreshList() {
+      requireConfig();
+      setStatus(postListStatus, '正在读取索引...');
+      try {
+        var idx = await readIndex();
+        posts = idx.list;
+        renderPostList();
+        setStatus(postListStatus, '共 ' + posts.length + ' 篇文章。');
+      } catch (err) {
+        setStatus(postListStatus, '读取失败：' + err.message, true);
+      }
+    }
+
+    /* ---------- 重建索引 ---------- */
+
+    async function rebuildIndex() {
+      requireConfig();
+
+      if (!confirm('用仓库里 posts/ 目录的实际文件重建索引？会用文件内容覆盖 index.json。')) return;
+
+      setStatus(postListStatus, '正在扫描 posts/ 目录...');
+
+      try {
+        var files = await listDir('posts');
+        var jsonFiles = files.filter(function (f) {
+          return f.type === 'file' && /\.json$/.test(f.name) && f.name !== 'index.json';
+        });
+
+        if (!jsonFiles.length) {
+          await writeIndex([]);
+          renderPostList();
+          setStatus(postListStatus, 'posts/ 里没有文章文件。');
+          return;
+        }
+
+        setStatus(postListStatus, '找到 ' + jsonFiles.length + ' 个文件，正在读取...');
+
+        var entries = [];
+
+        for (var i = 0; i < jsonFiles.length; i++) {
+          var name = jsonFiles[i].name;
+          var file = await getFile('posts/' + name);
+
+          if (!file) continue;
+
+          var post;
+          try { post = JSON.parse(file.text); } catch (e) { continue; }
+
+          var id = post.id || name.replace(/\.json$/, '');
+          entries.push({
+            id: id,
+            title: post.title || '',
+            date: post.date || '',
+            month: monthOf(id),
+            summary: summaryOf(post.text)
+          });
+        }
+
+        await writeIndex(entries);
+        renderPostList();
+        setStatus(postListStatus, '索引已重建，共 ' + entries.length + ' 篇。');
+      } catch (err) {
+        setStatus(postListStatus, '重建失败：' + err.message, true);
+      }
+    }
+
+    /* ---------- 导入旧 content.json ---------- */
+
+    async function importLegacy() {
+      requireConfig();
+
+      if (!confirm('把 content.json 当成一篇文章导入？')) return;
+
+      setStatus(postListStatus, '正在读取 content.json...');
+
+      try {
+        var file = await getFile('content.json');
+        if (!file) throw new Error('仓库里没有 content.json');
+
+        var data;
+        try { data = JSON.parse(file.text); } catch (e) { throw new Error('content.json 不是合法 JSON'); }
+
+        var id = makeId(new Date());
+        var post = {
+          id: id,
+          title: data.title || '导入的内容',
+          text: data.text || '',
+          images: Array.isArray(data.images) ? data.images : [],
+          date: data.updatedAt || formatDate(new Date())
+        };
+
+        await putTextFile('posts/' + id + '.json', JSON.stringify(post, null, 2), 'Import legacy content', null);
+        await upsertIndex(post);
+        await refreshList();
+
+        setStatus(postListStatus, '导入完成，文章 ID ' + id + '。');
+      } catch (err) {
+        setStatus(postListStatus, '导入失败：' + err.message, true);
+      }
+    }
+
+    /* ---------- 评论管理 ---------- */
+
+    function renderAdminComment(c) {
+      var div = document.createElement('div');
+      div.className = 'list-item';
+
+      var head = document.createElement('div');
+      head.className = 'list-time';
+      head.textContent = (c.name || '匿名访客') + ' · ' + (c.localTime || '');
+
+      var body = document.createElement('div');
+      body.className = 'list-meta';
+      body.style.color = '#111827';
+      body.style.fontSize = '14px';
+      body.textContent = c.text || '';
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'danger small';
+      delBtn.style.marginTop = '8px';
+      delBtn.textContent = '删除';
+
+      delBtn.addEventListener('click', async function () {
+        var pwd = adminPwdEl.value.trim();
+        if (!pwd) { alert('请先填管理密码。'); return; }
+        if (!confirm('确定删除这条评论？')) return;
+
+        try {
+          var res = await fetchT(
+            WORKER_URL + '/comment/delete?pwd=' + encodeURIComponent(pwd),
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: c._key })
+            },
+            15000
+          );
+
+          if (res.status === 401) { alert('密码错误。'); return; }
+          if (!res.ok) { alert('删除失败：HTTP ' + res.status); return; }
+
+          div.remove();
+        } catch (err) {
+          alert('删除失败：' + err.message);
+        }
+      });
+
+      div.appendChild(head);
+      div.appendChild(body);
+      div.appendChild(delBtn);
+      return div;
+    }
+
+    async function loadAllComments() {
+      setStatus(commentAdminStatus, '正在加载...');
+      commentAdminList.innerHTML = '';
+
+      try {
+        var res = await fetchT(WORKER_URL + '/comments?_=' + Date.now(), {}, 15000);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+
+        var list = await res.json();
+        if (!Array.isArray(list) || !list.length) {
+          setStatus(commentAdminStatus, '还没有评论。');
+          return;
+        }
+
+        var titles = {};
+        posts.forEach(function (p) { titles[p.id] = p.title || '(无标题)'; });
+
+        var groups = {};
+        var order = [];
+        var legacyCount = 0;
+
+        list.forEach(function (c) {
+          var key = c.post || '__legacy__';
+          if (!c.post) legacyCount++;
+          if (!groups[key]) { groups[key] = []; order.push(key); }
+          groups[key].push(c);
+        });
+
+        order.sort();
+
+        order.forEach(function (key) {
+          var head = document.createElement('div');
+          head.className = 'month-head';
+
+          if (key === '__legacy__') {
+            head.textContent = '未归档（旧数据，不属于任何文章）· ' + groups[key].length + ' 条';
+          } else {
+            head.textContent = (titles[key] || key) + ' · ' + groups[key].length + ' 条';
+          }
+
+          commentAdminList.appendChild(head);
+          groups[key].forEach(function (c) {
+            commentAdminList.appendChild(renderAdminComment(c));
+          });
+        });
+
+        var msg = '共 ' + list.length + ' 条评论，分属 ' + (order.length - (legacyCount ? 1 : 0)) + ' 篇文章。';
+        if (legacyCount) msg += ' 其中 ' + legacyCount + ' 条是旧数据，未归属任何文章。';
+        setStatus(commentAdminStatus, msg);
+      } catch (err) {
+        setStatus(commentAdminStatus, '加载失败：' + err.message, true);
+      }
+    }
+
+    /* ---------- 访问记录 ---------- */
+
+    function formatLogItem(item) {
+      var div = document.createElement('div');
+      div.className = 'list-item';
+
+      var time = document.createElement('div');
+      time.className = 'list-time';
+      time.textContent = item.localTime || item.time || '';
+
+      var meta = document.createElement('div');
+      meta.className = 'list-meta';
+
+      var parts = [];
+      if (item.country) parts.push(item.country);
+      if (item.region) parts.push(item.region);
+      if (item.city) parts.push(item.city);
+      if (item.ip) parts.push('IP: ' + item.ip);
+      if (item.screenSize) parts.push('屏幕: ' + item.screenSize);
+      if (item.language) parts.push('语言: ' + item.language);
+      if (item.page) parts.push('页面: ' + item.page);
+      meta.textContent = parts.join(' · ');
+
+      var ua = document.createElement('div');
+      ua.className = 'list-meta';
+      ua.textContent = item.ua || '';
+
+      div.appendChild(time);
+      div.appendChild(meta);
+      div.appendChild(ua);
+      return div;
+    }
+
+    async function loadLogsList() {
+      var pwd = adminPwdEl.value.trim();
+      if (!pwd) { setStatus(logStatus, '请先填管理密码。', true); return; }
+
+      setStatus(logStatus, '正在加载...');
+      logList.innerHTML = '';
+
+      try {
+        var res = await fetchT(
+          WORKER_URL + '/logs?pwd=' + encodeURIComponent(pwd) + '&_=' + Date.now(),
+          {},
+          15000
+        );
+
+        if (res.status === 401) { setStatus(logStatus, '密码错误。', true); return; }
+        if (!res.ok) { setStatus(logStatus, '加载失败：HTTP ' + res.status, true); return; }
+
+        var list = await res.json();
+
+        if (!Array.isArray(list) || !list.length) {
+          setStatus(logStatus, '目前还没有访问记录。');
+          return;
+        }
+
+        list.forEach(function (item) { logList.appendChild(formatLogItem(item)); });
+        setStatus(logStatus, '共 ' + list.length + ' 条记录。');
+      } catch (err) {
+        setStatus(logStatus, '加载失败：' + err.message, true);
+      }
+    }
+
+    async function clearAllLogs() {
+      var pwd = adminPwdEl.value.trim();
+      if (!pwd) { setStatus(logStatus, '请先填管理密码。', true); return; }
+      if (!confirm('确定清空所有访问记录？不可恢复。')) return;
+
+      try {
+        var res = await fetchT(
+          WORKER_URL + '/clear?pwd=' + encodeURIComponent(pwd),
+          { method: 'POST' },
+          15000
+        );
+
+        if (res.status === 401) { setStatus(logStatus, '密码错误。', true); return; }
+        if (!res.ok) { setStatus(logStatus, '清空失败：HTTP ' + res.status, true); return; }
+
+        logList.innerHTML = '';
+        setStatus(logStatus, '已清空。');
+      } catch (err) {
+        setStatus(logStatus, '清空失败：' + err.message, true);
+      }
+    }
+
+    /* ---------- 图片上传 ---------- */
+
+    async function uploadImage(file) {
+      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'image';
+      var path = 'images/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+      var buf = await file.arrayBuffer();
+
+      var res = await fetchT(apiUrl(path), {
+        method: 'PUT',
+        headers: ghJsonHeaders(),
+        body: JSON.stringify({
+          message: 'Upload ' + path,
+          content: arrayBufferToBase64(buf),
+          branch: branch
+        })
+      }, 60000);
+
+      if (!res.ok) throw new Error(await getErrorMessage(res));
+      return path;
     }
 
     /* ---------- 恢复本地配置 ---------- */
@@ -498,12 +976,12 @@
         branchEl.value = cfg.branch || 'main';
         tokenEl.value = cfg.token || '';
         rememberEl.checked = true;
-      } catch (e) { /* 忽略坏数据 */ }
+      } catch (e) {}
     })();
 
-    /* ---------- 连接 GitHub ---------- */
+    /* ---------- 事件绑定 ---------- */
 
-    connectBtn.addEventListener('click', function () {
+    connectBtn.addEventListener('click', async function () {
       readConfig();
 
       if (!owner || !repo || !token) {
@@ -519,277 +997,61 @@
         } else {
           localStorage.removeItem('github-admin-config');
         }
-      } catch (e) { /* 隐私模式下可能失败，不影响使用 */ }
+      } catch (e) {}
 
-      setStatus(connStatus, '正在读取 content.json...');
+      setStatus(connStatus, '正在读取 posts/index.json...');
 
-      getFile('content.json').then(function (file) {
-        if (file) {
-          var data;
-          try {
-            data = JSON.parse(file.text);
-          } catch (e) {
-            throw new Error('content.json 不是合法 JSON，请先修好仓库里的这个文件');
-          }
-          currentSha = file.sha;
-          fillForm(data);
-          setStatus(connStatus, '读取成功。');
+      try {
+        var idx = await readIndex();
+        posts = idx.list;
+        renderPostList();
+        setStatus(connStatus, '连接成功。仓库里有 ' + posts.length + ' 篇文章。');
+
+        if (!posts.length) {
+          setStatus(postListStatus, '还没有文章。可以点「新建文章」，或用「从 content.json 导入」。');
         } else {
-          currentSha = null;
-          fillForm({ title: '扫码查看', text: '', images: [], updatedAt: '' });
-          setStatus(connStatus, 'content.json 不存在，点击保存会创建。');
+          setStatus(postListStatus, '共 ' + posts.length + ' 篇文章。');
         }
-      }).catch(function (err) {
+      } catch (err) {
         setStatus(connStatus, '连接失败：' + err.message, true);
-      });
+      }
     });
 
-    /* ---------- 图片 ---------- */
-
+    newPostBtn.addEventListener('click', startNew);
+    cancelEditBtn.addEventListener('click', startNew);
     addImageBtn.addEventListener('click', function () { addImageRow('', ''); });
+    savePostBtn.addEventListener('click', saveCurrent);
+    refreshListBtn.addEventListener('click', refreshList);
+    rebuildIndexBtn.addEventListener('click', rebuildIndex);
+    importLegacyBtn.addEventListener('click', importLegacy);
+    loadCommentsBtn.addEventListener('click', loadAllComments);
+    loadLogs.addEventListener('click', loadLogsList);
+    clearLogs.addEventListener('click', clearAllLogs);
 
-    fileInput.addEventListener('change', function () {
+    fileInput.addEventListener('change', async function () {
       var file = fileInput.files[0];
       if (!file) return;
 
-      readConfig();
-
-      if (!owner || !repo || !token) {
-        setStatus(uploadStatus, '请先填写连接信息并连接。', true);
+      try { requireConfig(); } catch (err) {
+        setStatus(uploadStatus, err.message, true);
         fileInput.value = '';
         return;
       }
 
       setStatus(uploadStatus, '正在上传图片...');
 
-      uploadImage(file).then(function (path) {
+      try {
+        var path = await uploadImage(file);
         addImageRow(path, file.name);
-        setStatus(uploadStatus, '图片已上传到仓库。点击“保存到 GitHub”保存内容。');
-      }).catch(function (err) {
+        setStatus(uploadStatus, '图片已上传。记得点「保存文章」。');
+      } catch (err) {
         setStatus(uploadStatus, '上传失败：' + err.message, true);
-      }).then(function () {
+      } finally {
         fileInput.value = '';
-      });
-    });
-
-    /* ---------- 保存内容 ---------- */
-
-    saveBtn.addEventListener('click', function () {
-      readConfig();
-
-      if (!owner || !repo || !token) {
-        setStatus(saveStatus, '请先填写连接信息并连接。', true);
-        return;
       }
-
-      setStatus(saveStatus, '正在保存...');
-
-      var content = collectContent();
-      var text = JSON.stringify(content, null, 2);
-
-      putTextFile('content.json', text, 'Update content.json', currentSha)
-        .then(function (result) {
-          currentSha = (result.content && result.content.sha) || currentSha;
-          setStatus(saveStatus, '保存成功。GitHub Pages 需要几十秒到几分钟部署。');
-        })
-        .catch(function (err) {
-          setStatus(saveStatus, '保存失败：' + err.message, true);
-        });
     });
 
-    /* ---------- Worker 诊断 ---------- */
-
-    pingBtn.addEventListener('click', function () {
-      var url = WORKER_URL + '/comments';
-      setStatus(pingStatusEl, '正在请求 ' + url);
-
-      fetchWithTimeout(url, {}, 15000).then(function (res) {
-        return res.text().then(function (body) {
-          setStatus(
-            pingStatusEl,
-            'HTTP ' + res.status + ' ' + res.statusText + '\n' + body.slice(0, 300),
-            !res.ok
-          );
-        });
-      }).catch(function (err) {
-        setStatus(pingStatusEl, '请求失败：' + err.message, true);
-      });
-    });
-
-    /* ---------- 评论管理 ---------- */
-
-    function renderAdminComment(c) {
-      var div = document.createElement('div');
-      div.className = 'log-item';
-
-      var head = document.createElement('div');
-      head.className = 'log-time';
-      head.textContent = (c.name || '匿名访客') + ' · ' + (c.localTime || '');
-
-      var text = document.createElement('div');
-      text.className = 'log-meta';
-      text.style.color = '#111827';
-      text.style.fontSize = '14px';
-      text.style.marginTop = '6px';
-      text.textContent = c.text || '';
-
-      var delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'danger';
-      delBtn.style.marginTop = '8px';
-      delBtn.textContent = '删除';
-
-      delBtn.addEventListener('click', function () {
-        var pwd = logsPwdEl.value.trim();
-
-        if (!pwd) {
-          alert('请先在“访问记录”里填写日志密码。');
-          return;
-        }
-
-        if (!confirm('确定删除这条评论？')) return;
-
-        fetchWithTimeout(
-          WORKER_URL + '/comment/delete?pwd=' + encodeURIComponent(pwd),
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: c.id })
-          },
-          15000
-        ).then(function (res) {
-          if (res.status === 401) { alert('密码错误。'); return; }
-          if (!res.ok) { alert('删除失败：HTTP ' + res.status); return; }
-          div.remove();
-        }).catch(function (err) {
-          alert('删除失败：' + err.message);
-        });
-      });
-
-      div.append(head, text, delBtn);
-      return div;
-    }
-
-    loadCommentsBtn.addEventListener('click', function () {
-      setStatus(commentAdminStatusEl, '正在加载...');
-      commentAdminListEl.innerHTML = '';
-
-      fetchWithTimeout(WORKER_URL + '/comments?_=' + Date.now(), {}, 15000)
-        .then(function (res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        })
-        .then(function (comments) {
-          if (!comments.length) {
-            setStatus(commentAdminStatusEl, '还没有评论。');
-            return;
-          }
-          comments.forEach(function (c) {
-            commentAdminListEl.appendChild(renderAdminComment(c));
-          });
-          setStatus(commentAdminStatusEl, '共 ' + comments.length + ' 条评论。');
-        })
-        .catch(function (err) {
-          setStatus(commentAdminStatusEl, '加载失败：' + err.message, true);
-        });
-    });
-
-    /* ---------- 访问记录 ---------- */
-
-    function formatLogItem(item) {
-      var div = document.createElement('div');
-      div.className = 'log-item';
-
-      var time = document.createElement('div');
-      time.className = 'log-time';
-      time.textContent = item.localTime || item.time || '';
-
-      var meta = document.createElement('div');
-      meta.className = 'log-meta';
-
-      var parts = [];
-      if (item.country) parts.push(item.country);
-      if (item.region) parts.push(item.region);
-      if (item.city) parts.push(item.city);
-      if (item.ip) parts.push('IP: ' + item.ip);
-      if (item.screenSize) parts.push('屏幕: ' + item.screenSize);
-      if (item.language) parts.push('语言: ' + item.language);
-      if (item.referer) parts.push('来源: ' + item.referer);
-
-      meta.textContent = parts.join(' · ');
-
-      var ua = document.createElement('div');
-      ua.className = 'log-meta';
-      ua.textContent = item.ua || '';
-
-      div.append(time, meta, ua);
-      return div;
-    }
-
-    loadLogsBtn.addEventListener('click', function () {
-      var pwd = logsPwdEl.value.trim();
-
-      if (!pwd) {
-        setStatus(logStatusEl, '请先填写日志密码。', true);
-        return;
-      }
-
-      setStatus(logStatusEl, '正在加载...');
-      logListEl.innerHTML = '';
-
-      fetchWithTimeout(
-        WORKER_URL + '/logs?pwd=' + encodeURIComponent(pwd) + '&_=' + Date.now(),
-        {},
-        15000
-      ).then(function (res) {
-        if (res.status === 401) throw new Error('AUTH');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }).then(function (logs) {
-        if (!logs.length) {
-          setStatus(logStatusEl, '目前还没有访问记录。');
-          return;
-        }
-        logs.forEach(function (item) {
-          logListEl.appendChild(formatLogItem(item));
-        });
-        setStatus(logStatusEl, '共 ' + logs.length + ' 条记录。');
-      }).catch(function (err) {
-        if (err.message === 'AUTH') {
-          setStatus(logStatusEl, '密码错误。', true);
-        } else {
-          setStatus(logStatusEl, '加载失败：' + err.message, true);
-        }
-      });
-    });
-
-    clearLogsBtn.addEventListener('click', function () {
-      var pwd = logsPwdEl.value.trim();
-
-      if (!pwd) {
-        setStatus(logStatusEl, '请先填写日志密码。', true);
-        return;
-      }
-
-      if (!confirm('确定要清空所有访问记录吗？此操作不可恢复。')) return;
-
-      fetchWithTimeout(
-        WORKER_URL + '/clear?pwd=' + encodeURIComponent(pwd),
-        { method: 'POST' },
-        15000
-      ).then(function (res) {
-        if (res.status === 401) throw new Error('AUTH');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        logListEl.innerHTML = '';
-        setStatus(logStatusEl, '已清空。');
-      }).catch(function (err) {
-        if (err.message === 'AUTH') {
-          setStatus(logStatusEl, '密码错误。', true);
-        } else {
-          setStatus(logStatusEl, '清空失败：' + err.message, true);
-        }
-      });
-    });
+    startNew();
   }
 })();
 </script>
