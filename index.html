@@ -1,169 +1,72 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>扫码查看</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>扫码查看</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f6f7f9;
+    color: #111827;
+    line-height: 1.7;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 18px 64px; }
+  h1 { font-size: clamp(26px, 6vw, 40px); line-height: 1.25; margin: 0 0 8px; word-break: break-word; }
+  h2 { font-size: 20px; margin: 0 0 14px; }
+  .post-date { color: #9ca3af; font-size: 13px; margin: 0 0 24px; }
+  .text { white-space: pre-wrap; font-size: 18px; margin: 0 0 28px; word-break: break-word; }
+  .images { display: grid; gap: 18px; }
+  figure { margin: 0; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+  img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 10px 14px; color: #6b7280; font-size: 14px; }
+  .notice { padding: 14px 16px; background: #fef2f2; color: #991b1b; border-radius: 12px; margin-bottom: 20px; font-size: 14px; }
+  .muted { color: #9ca3af; font-size: 14px; }
+  .back { display: inline-block; margin-bottom: 16px; color: #4b5563; font-size: 14px; text-decoration: none; }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f6f7f9;
-      color: #111827;
-      line-height: 1.7;
-    }
+  .comments, .archive { margin-top: 48px; padding-top: 28px; border-top: 1px solid #e5e7eb; }
+  #commentForm { display: grid; gap: 10px; margin-bottom: 22px; }
+  #commentForm input, #commentForm textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+    border-radius: 10px; font: inherit; background: #fff; resize: vertical;
+  }
+  .comment-actions { display: flex; align-items: center; gap: 12px; }
+  .comment-actions button {
+    padding: 8px 20px; border: 0; border-radius: 10px;
+    background: #111827; color: #fff; font: inherit; cursor: pointer;
+  }
+  .comment-actions button:disabled { opacity: .5; cursor: not-allowed; }
+  #commentStatus { color: #6b7280; font-size: 13px; }
+  .comment-item { background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+  .comment-head { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+  .comment-name { font-weight: 600; color: #111827; }
+  .comment-text { white-space: pre-wrap; word-break: break-word; font-size: 15px; }
 
-    main {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 32px 18px 64px;
-    }
-
-    h1 {
-      font-size: clamp(28px, 6vw, 44px);
-      line-height: 1.2;
-      margin: 0 0 24px;
-      word-break: break-word;
-    }
-
-    .text {
-      white-space: pre-wrap;
-      font-size: 18px;
-      margin: 0 0 28px;
-    }
-
-    .images {
-      display: grid;
-      gap: 18px;
-    }
-
-    figure {
-      margin: 0;
-      background: #fff;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,.08);
-    }
-
-    img {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    figcaption {
-      padding: 10px 14px;
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .updated {
-      margin-top: 32px;
-      color: #9ca3af;
-      font-size: 13px;
-    }
-
-    .error {
-      padding: 16px;
-      background: #fef2f2;
-      color: #991b1b;
-      border-radius: 12px;
-    }
-        .comments {
-      margin-top: 48px;
-      padding-top: 28px;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .comments h2 {
-      font-size: 22px;
-      margin: 0 0 16px;
-    }
-
-    #commentForm {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-
-    #commentForm input,
-    #commentForm textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font: inherit;
-      background: #fff;
-      resize: vertical;
-    }
-
-    .comment-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .comment-actions button {
-      padding: 8px 20px;
-      border: 0;
-      border-radius: 10px;
-      background: #111827;
-      color: #fff;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    .comment-actions button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    #commentStatus {
-      color: #6b7280;
-      font-size: 13px;
-    }
-
-    .comment-item {
-      background: #fff;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.05);
-    }
-
-    .comment-head {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 6px;
-    }
-
-    .comment-name {
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .comment-text {
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 15px;
-    }
-
-    .comment-empty {
-      color: #9ca3af;
-      font-size: 14px;
-    }
-  </style>
+  .month-head { margin: 18px 0 8px; font-weight: 700; color: #374151; font-size: 14px; }
+  .post-link {
+    display: block; padding: 10px 12px; background: #fff; border-radius: 10px;
+    margin-bottom: 8px; text-decoration: none; color: #111827;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .post-link.current { outline: 2px solid #111827; }
+  .post-link-date { display: block; color: #9ca3af; font-size: 12px; margin-top: 2px; }
+</style>
 </head>
 <body>
 <main>
-  <h1 id="title">加载中...</h1>
-  <div id="text" class="text"></div>
-  <div id="images" class="images"></div>
-  <div id="updated" class="updated"></div>
+  <div id="notice" class="notice" hidden></div>
+
+  <a id="backLink" class="back" href="?" hidden>← 返回最新</a>
+
+  <article>
+    <h1 id="title">加载中...</h1>
+    <p id="postDate" class="post-date"></p>
+    <div id="text" class="text"></div>
+    <div id="images" class="images"></div>
+  </article>
+
   <section class="comments">
     <h2>留言</h2>
     <form id="commentForm">
@@ -174,180 +77,334 @@
         <span id="commentStatus"></span>
       </div>
     </form>
-    <div id="commentList" class="comment-list">正在加载留言...</div>
+    <div id="commentList"><p class="muted">正在加载留言...</p></div>
+  </section>
+
+  <section class="archive">
+    <h2>历史文章</h2>
+    <div id="archiveList"><p class="muted">正在加载...</p></div>
   </section>
 </main>
 
 <script>
-async function loadContent() {
-  const titleEl = document.getElementById('title');
-  const textEl = document.getElementById('text');
-  const imagesEl = document.getElementById('images');
-  const updatedEl = document.getElementById('updated');
+(function () {
+  'use strict';
 
-  try {
-    const res = await fetch(`./content.json?v=${Date.now()}`, {
-      cache: 'no-store'
-    });
+  var WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+  var INDEX_URL = './posts/index.json';
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  var el = {};
+  ['notice','backLink','title','postDate','text','images','commentForm',
+   'commentName','commentText','commentSubmit','commentStatus','commentList',
+   'archiveList'].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
 
-    const data = await res.json();
+  var posts = [];
+  var currentPostId = '';
 
-    titleEl.textContent = data.title || '';
-    textEl.textContent = data.text || '';
+  function showNotice(msg) {
+    el.notice.textContent = msg;
+    el.notice.hidden = false;
+  }
 
-    imagesEl.innerHTML = '';
+  function queryId() {
+    try { return new URLSearchParams(location.search).get('p') || ''; }
+    catch (e) { return ''; }
+  }
 
-    (data.images || []).forEach(item => {
+  function monthLabel(m) {
+    var parts = String(m).split('-');
+    if (parts.length !== 2) return '未归档';
+    return parts[0] + '年' + Number(parts[1]) + '月';
+  }
+
+  function renderPost(post) {
+    document.title = post.title || '扫码查看';
+    el.title.textContent = post.title || '(无标题)';
+    el.postDate.textContent = post.date || '';
+    el.text.textContent = post.text || '';
+    el.images.innerHTML = '';
+
+    var imgs = Array.isArray(post.images) ? post.images : [];
+    imgs.forEach(function (item) {
       if (!item || !item.src) return;
 
-      const figure = document.createElement('figure');
-      const img = document.createElement('img');
-
+      var figure = document.createElement('figure');
+      var img = document.createElement('img');
       img.src = item.src;
       img.alt = item.alt || '';
       img.loading = 'lazy';
-
       figure.appendChild(img);
 
       if (item.alt) {
-        const cap = document.createElement('figcaption');
+        var cap = document.createElement('figcaption');
         cap.textContent = item.alt;
         figure.appendChild(cap);
       }
 
-      imagesEl.appendChild(figure);
+      el.images.appendChild(figure);
     });
-
-    updatedEl.textContent = data.updatedAt
-      ? `更新时间：${data.updatedAt}`
-      : '';
-  } catch (err) {
-    titleEl.textContent = '加载失败';
-    textEl.innerHTML = '';
-    imagesEl.innerHTML = '';
-
-    const div = document.createElement('div');
-    div.className = 'error';
-    div.textContent = '无法读取 content.json。请确认文件已提交，并等待 GitHub Pages 部署完成。';
-
-    imagesEl.appendChild(div);
-    console.error(err);
   }
-}
 
-loadContent();
-/* ========== 评论 ========== */
-const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+  function renderArchive() {
+    el.archiveList.innerHTML = '';
 
-const commentListEl = document.getElementById('commentList');
-const commentFormEl = document.getElementById('commentForm');
-const commentNameEl = document.getElementById('commentName');
-const commentTextEl = document.getElementById('commentText');
-const commentSubmitEl = document.getElementById('commentSubmit');
-const commentStatusEl = document.getElementById('commentStatus');
-
-function renderComment(c) {
-  const div = document.createElement('div');
-  div.className = 'comment-item';
-
-  const head = document.createElement('div');
-  head.className = 'comment-head';
-
-  const name = document.createElement('span');
-  name.className = 'comment-name';
-  name.textContent = c.name || '匿名访客';
-
-  const time = document.createElement('span');
-  time.textContent = c.localTime || '';
-
-  head.append(name, time);
-
-  const text = document.createElement('div');
-  text.className = 'comment-text';
-  text.textContent = c.text || '';
-
-  div.append(head, text);
-  return div;
-}
-
-async function loadComments() {
-  try {
-    const res = await fetch(`${WORKER_URL}/comments?_=${Date.now()}`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    const comments = await res.json();
-    commentListEl.innerHTML = '';
-
-    if (!comments.length) {
-      commentListEl.innerHTML = '<p class="comment-empty">感谢留言喵。</p>';
+    if (!posts.length) {
+      el.archiveList.innerHTML = '<p class="muted">暂无历史文章。</p>';
       return;
     }
 
-    comments.forEach(c => commentListEl.appendChild(renderComment(c)));
-  } catch (e) {
-    commentListEl.innerHTML = '<p class="comment-empty">留言加载失败。</p>';
+    var groups = {};
+    var order = [];
+
+    posts.forEach(function (p) {
+      var m = p.month || '未归档';
+      if (!groups[m]) { groups[m] = []; order.push(m); }
+      groups[m].push(p);
+    });
+
+    order.sort().reverse();
+
+    order.forEach(function (m) {
+      var head = document.createElement('div');
+      head.className = 'month-head';
+      head.textContent = monthLabel(m) + '（' + groups[m].length + '）';
+      el.archiveList.appendChild(head);
+
+      groups[m].forEach(function (p) {
+        var a = document.createElement('a');
+        a.className = 'post-link' + (p.id === currentPostId ? ' current' : '');
+        a.href = '?p=' + encodeURIComponent(p.id);
+
+        var t = document.createElement('span');
+        t.textContent = p.title || '(无标题)';
+        a.appendChild(t);
+
+        var d = document.createElement('span');
+        d.className = 'post-link-date';
+        d.textContent = p.date || '';
+        a.appendChild(d);
+
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          navigate(p.id);
+        });
+
+        el.archiveList.appendChild(a);
+      });
+    });
   }
-}
 
-commentFormEl.addEventListener('submit', async (e) => {
-  e.preventDefault();
+  function renderComments(list) {
+    el.commentList.innerHTML = '';
 
-  const text = commentTextEl.value.trim();
-  if (!text) return;
+    if (!list.length) {
+      el.commentList.innerHTML = '<p class="muted">还没有留言。</p>';
+      return;
+    }
 
-  commentSubmitEl.disabled = true;
-  commentStatusEl.textContent = '发送中...';
+    list.forEach(function (c) {
+      var div = document.createElement('div');
+      div.className = 'comment-item';
 
-  try {
-    const res = await fetch(`${WORKER_URL}/comment`, {
+      var head = document.createElement('div');
+      head.className = 'comment-head';
+
+      var name = document.createElement('span');
+      name.className = 'comment-name';
+      name.textContent = c.name || '匿名访客';
+
+      var time = document.createElement('span');
+      time.textContent = c.localTime || '';
+
+      head.appendChild(name);
+      head.appendChild(time);
+
+      var t = document.createElement('div');
+      t.className = 'comment-text';
+      t.textContent = c.text || '';
+
+      div.appendChild(head);
+      div.appendChild(t);
+      el.commentList.appendChild(div);
+    });
+  }
+
+  function loadComments() {
+    if (!currentPostId) {
+      el.commentList.innerHTML = '<p class="muted">还没有文章，无法留言。</p>';
+      return;
+    }
+
+    el.commentList.innerHTML = '<p class="muted">正在加载留言...</p>';
+
+    fetch(WORKER_URL + '/comments?post=' + encodeURIComponent(currentPostId) + '&_=' + Date.now())
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (list) {
+        renderComments(Array.isArray(list) ? list : []);
+      })
+      .catch(function () {
+        el.commentList.innerHTML = '<p class="muted">留言加载失败。</p>';
+      });
+  }
+
+  function updateBackLink() {
+    var isNewest = posts.length && posts[0].id === currentPostId;
+    el.backLink.hidden = !posts.length || isNewest;
+  }
+
+  function showPost(id) {
+    currentPostId = id;
+    updateBackLink();
+    renderArchive();
+    loadComments();
+
+    var entry = null;
+    for (var i = 0; i < posts.length; i++) {
+      if (posts[i].id === id) { entry = posts[i]; break; }
+    }
+
+    renderPost(entry || { id: id });
+
+    fetch('./posts/' + encodeURIComponent(id) + '.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (full) {
+        renderPost(full);
+      })
+      .catch(function () {
+        showNotice('文章正文加载失败，请稍后刷新页面。');
+      });
+  }
+
+  function navigate(id) {
+    try { history.pushState({ p: id }, '', '?p=' + encodeURIComponent(id)); } catch (e) {}
+    showPost(id);
+  }
+
+  function loadLegacy() {
+    currentPostId = 'legacy';
+    el.backLink.hidden = true;
+    renderArchive();
+
+    fetch('./content.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        renderPost({
+          title: data.title,
+          text: data.text,
+          images: data.images,
+          date: data.updatedAt
+        });
+      })
+      .catch(function () {
+        renderPost({ title: '暂无内容', text: '后台还没有发布文章。' });
+      })
+      .then(function () {
+        loadComments();
+      });
+  }
+
+  function boot() {
+    fetch(INDEX_URL + '?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) return [];
+        return res.json();
+      })
+      .then(function (data) {
+        posts = Array.isArray(data) ? data : [];
+
+        if (!posts.length) {
+          loadLegacy();
+          return;
+        }
+
+        var id = queryId();
+        var found = posts.some(function (p) { return p.id === id; });
+        showPost(found ? id : posts[0].id);
+      })
+      .catch(function () {
+        posts = [];
+        loadLegacy();
+      });
+  }
+
+  el.commentForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var content = el.commentText.value.trim();
+    if (!content || !currentPostId) return;
+
+    el.commentSubmit.disabled = true;
+    el.commentStatus.textContent = '发送中...';
+
+    fetch(WORKER_URL + '/comment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: commentNameEl.value.trim(),
-        text
+        post: currentPostId,
+        name: el.commentName.value.trim(),
+        text: content
       })
-    });
-
-    if (res.status === 429) {
-      commentStatusEl.textContent = '发送太频繁，稍后再试。';
-      return;
-    }
-
-    if (!res.ok) {
-      commentStatusEl.textContent = '发送失败。';
-      return;
-    }
-
-    commentTextEl.value = '';
-    commentStatusEl.textContent = '已发送。';
-    await loadComments();
-  } catch (err) {
-    commentStatusEl.textContent = '发送失败：' + err.message;
-  } finally {
-    commentSubmitEl.disabled = false;
-    setTimeout(() => { commentStatusEl.textContent = ''; }, 3000);
-  }
-});
-
-loadComments();
-</script>
-
-<script>
-(function reportVisit() {
-  const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
-
-  fetch(WORKER_URL + '/log', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      referer: document.referrer || '',
-      language: navigator.language || '',
-      screenSize: window.screen.width + 'x' + window.screen.height,
-      page: location.href
     })
-  }).catch(() => {});
+      .then(function (res) {
+        if (res.status === 429) throw new Error('发送太频繁，稍后再试。');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        el.commentText.value = '';
+        el.commentStatus.textContent = '已发送。';
+        return loadComments();
+      })
+      .catch(function (err) {
+        el.commentStatus.textContent = '发送失败：' + err.message;
+      })
+      .then(function () {
+        el.commentSubmit.disabled = false;
+        setTimeout(function () { el.commentStatus.textContent = ''; }, 3000);
+      });
+  });
+
+  el.backLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (posts.length) navigate(posts[0].id);
+  });
+
+  window.addEventListener('popstate', function () {
+    if (!posts.length) return;
+    var id = queryId();
+    var found = posts.some(function (p) { return p.id === id; });
+    showPost(found ? id : posts[0].id);
+  });
+
+  window.addEventListener('error', function (e) {
+    showNotice('脚本错误：' + (e.message || '未知错误'));
+  });
+
+  boot();
+
+  /* ===== 访问上报，保持独立 ===== */
+  (function reportVisit() {
+    try {
+      fetch(WORKER_URL + '/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referer: document.referrer || '',
+          language: navigator.language || '',
+          screenSize: window.screen.width + 'x' + window.screen.height,
+          page: location.href
+        })
+      }).catch(function () {});
+    } catch (e) {}
+  })();
 })();
 </script>
 </body>
