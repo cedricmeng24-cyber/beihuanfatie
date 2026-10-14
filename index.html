@@ -68,7 +68,6 @@ var _hmt = _hmt || [];
 <body>
 <main>
   <div id="notice" class="notice" hidden></div>
-
   <a id="backLink" class="back" href="?" hidden>← 返回最新</a>
 
   <article>
@@ -77,17 +76,7 @@ var _hmt = _hmt || [];
     <div id="text" class="text"></div>
     <div id="images" class="images"></div>
 
-    <!-- 她的文章归档区（放上面） -->
-    <section id="herArchive" style="display:none; margin-top:48px; padding-top:24px; border-top:1px dashed #e5e7eb;">
-      <h2 style="font-size:20px; color:#764ba2; margin-bottom:20px;">🐇whity's writings</h2>
-      <div id="herArchiveList"></div>
-    </section>
 
-    <!-- 兔子编辑入口按钮（放最下面） -->
-    <pre id="rabbitBtn" title="whity's writings" style="text-align: center; color: #9ca3af; font-family: monospace; cursor: pointer; margin-top: 40px; line-height: 1.2; user-select: none; transition: color 0.2s;">
- (\/)
-( •_•)
-/ >  ✎</pre>
 
     <!-- 隐藏的编辑弹窗 -->
     <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; align-items: center; justify-content: center;">
@@ -111,7 +100,7 @@ var _hmt = _hmt || [];
 
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
           <button id="editCancel" style="padding: 10px 16px; border: none; border-radius: 8px; background: #f3f4f6; color: #333; cursor: pointer;">取消</button>
-          <button id="editSave" style="padding: 10px 16px; border: none; border-radius: 8px; background: #764ba2; color: #fff; font-weight: bold; cursor: pointer;">存进抽屉</button>
+          <button id="editSave" style="padding: 10px 16px; border: none; border-radius: 8px; background: #764ba2; color: #fff; font-weight: bold; cursor: pointer;">存进小抽屉</button>
         </div>
         <div id="editStatus" style="font-size: 13px; color: #6b7280; margin-top: 10px; text-align: center;"></div>
       </div>
@@ -135,6 +124,18 @@ var _hmt = _hmt || [];
     <h2>历史文章</h2>
     <div id="archiveList"><p class="muted">正在加载...</p></div>
   </section>
+
+  <!-- 她的文章归档区（页面最底部） -->
+  <section id="herArchive" style="display:none; margin-top:48px; padding-top:24px; border-top:1px dashed #e5e7eb;">
+    <h2 style="font-size:20px; color:#764ba2; margin-bottom:20px;">🐇whity's writings</h2>
+    <div id="herArchiveList"></div>
+  </section>
+ 
+  <!-- 兔子编辑入口按钮 -->
+    <pre id="rabbitBtn" title="whity's writings" style="text-align: center; color: #9ca3af; font-family: monospace; cursor: pointer; margin-top: 40px; line-height: 1.2; user-select: none; transition: color 0.2s;">
+(\_/)
+( •_•)
+/ >  ✎</pre>
 
 </main>
 
