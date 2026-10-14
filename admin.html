@@ -52,7 +52,29 @@
 </style>
 </head>
 <body>
-<main>
+ <div id="adminGate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#f6f7f9;">
+  <pre onclick="checkAdminPwd()" style="font-family:monospace;line-height:1.4;color:#764ba2;font-size:24px;cursor:pointer;">
+(\_/)
+( •_•)
+/ >  ✎</pre>
+  <p style="color:#6b7280;font-size:14px;">密码</p>
+  <input id="adminGatePwd" type="password" placeholder="密码" style="padding:12px;border:2px solid #d1d5db;border-radius:12px;text-align:center;width:240px;">
+  <button onclick="checkAdminPwd()" style="margin-top:12px;padding:10px 24px;border:none;border-radius:12px;background:#764ba2;color:#fff;font-weight:bold;cursor:pointer;">解锁</button>
+  <p id="adminGateMsg" style="color:#c00;font-size:13px;height:18px;"></p>
+</div>
+<main id="adminMain" style="display:none;">
+
+ <section class="card" style="margin-top:20px;">
+  <h2>🐰 whity's writings</h2>
+  <button id="loadHerArticle" type="button">读取</button>
+  <div id="herAdminContent" style="display:none;margin-top:12px;">
+    <p><strong>标题：</strong><span id="herAdminTitle"></span></p>
+    <p><strong>加密方式：</strong><span id="herAdminLockType"></span></p>
+    <p><strong>密码：</strong><span id="herAdminPwd" style="color:#c00;font-weight:bold;"></span></p>
+    <pre id="herAdminText" style="white-space:pre-wrap;background:#fff;padding:12px;border:1px solid #e5e7eb;border-radius:8px;"></pre>
+  </div>
+</section>
+ 
   <div id="errorBanner"></div>
   <h1>内容后台</h1>
 
@@ -1054,6 +1076,63 @@
     startNew();
   }
 })();
+
+ const ADMIN_PWD = 'kano1224';
+
+function checkAdminPwd() {
+  const pwd = document.getElementById('adminGatePwd').value.trim();
+  const msg = document.getElementById('adminGateMsg');
+  if (pwd === ADMIN_PWD) {
+    document.getElementById('adminGate').style.display = 'none';
+    document.getElementById('adminMain').style.display = 'block';
+    localStorage.setItem('admin_logged_in', 'true');
+  } else {
+    msg.textContent = '密码不正确';
+    document.getElementById('adminGatePwd').value = '';
+  }
+}
+
+document.getElementById('adminGatePwd').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAdminPwd();
+});
+
+// 刷新保持登录，不想让她烦就留着，想每次输就删掉这段
+if (localStorage.getItem('admin_logged_in') === 'true') {
+  document.getElementById('adminGate').style.display = 'none';
+  document.getElementById('adminMain').style.display = 'block';
+}
+
+ document.getElementById('loadHerArticle').addEventListener('click', async () => {
+  const owner = document.getElementById('owner').value.trim();
+  const repo = document.getElementById('repo').value.trim();
+  const token = document.getElementById('token').value.trim();
+  const branch = document.getElementById('branch').value.trim() || 'main';
+
+  if (!owner || !repo || !token) return alert('先填连接信息');
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/her_article.json?ref=${branch}`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    if (res.status === 404) return alert('她还没写');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const fileData = await res.json();
+    const binary = atob(fileData.content.replace(/\s/g, ''));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const data = JSON.parse(new TextDecoder().decode(bytes));
+
+    document.getElementById('herAdminContent').style.display = 'block';
+    document.getElementById('herAdminTitle').textContent = data.title || '无';
+    document.getElementById('herAdminLockType').textContent =
+      data.lockType === 'locked' ? '🔒 上锁' : data.lockType === 'password' ? '🔑 密码' : '🌐 公开';
+    document.getElementById('herAdminPwd').textContent = data.password || 'loveyou';
+    document.getElementById('herAdminText').textContent = data.text || '';
+  } catch (err) {
+    alert('读失败：' + err.message);
+  }
+});
 </script>
 </body>
 </html>
