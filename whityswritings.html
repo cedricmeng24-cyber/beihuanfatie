@@ -28,8 +28,35 @@
 </main>
 
 <script>
+const LOCKED_KEY = 'whity_locked_key_2026';
 const params = new URLSearchParams(location.search);
 const id = params.get('id');
+
+function b64decode(s) {
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function deriveKey(password, salt) {
+  const enc = new TextEncoder();
+  const km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+  );
+}
+
+async function decryptText(cipherB64, password, ivB64, saltB64) {
+  const key = await deriveKey(password, b64decode(saltB64));
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: b64decode(ivB64) },
+    key,
+    b64decode(cipherB64)
+  );
+  return new TextDecoder().decode(plain);
+}
 
 async function load() {
   if (!id) { document.getElementById('body').innerHTML = '<p>缺少文章 ID</p>'; return; }
@@ -47,11 +74,11 @@ async function load() {
     const bodyEl = document.getElementById('body');
     bodyEl.innerHTML = '';
 
-    function renderAll() {
+    function renderAll(plainText) {
       bodyEl.innerHTML = '';
       const textEl = document.createElement('div');
       textEl.className = 'text';
-      textEl.textContent = item.text || '';
+      textEl.textContent = plainText || '';
       bodyEl.appendChild(textEl);
 
       if (Array.isArray(item.images) && item.images.length) {
@@ -61,7 +88,7 @@ async function load() {
           if (!im || !im.src) return;
           const fig = document.createElement('figure');
           const img = document.createElement('img');
-          img.src = im.src; img.alt = im.alt || ''; img.loading = 'lazy';
+          img.src = im.src; img.alt = ''; img.loading = 'lazy';
           fig.appendChild(img);
           imgs.appendChild(fig);
         });
@@ -69,8 +96,23 @@ async function load() {
       }
     }
 
-    if (item.lockType === 'locked') {
-      bodyEl.innerHTML = '<div class="lock">🔒 被锁起来了。</div>';
+    if (item.lockType === 'none') {
+      renderAll(item.text || '');
+    } else if (item.lockType === 'locked') {
+      bodyEl.innerHTML = `
+        <div class="lock">
+          🔒 这篇文章被锁起来了。
+          <div style="margin-top:12px;"><button id="unlockBtn">解锁</button></div>
+        </div>
+      `;
+      document.getElementById('unlockBtn').onclick = async () => {
+        try {
+          const plain = await decryptText(item.cipher, LOCKED_KEY, item.iv, item.salt);
+          renderAll(plain);
+        } catch {
+          bodyEl.innerHTML = '<p style="color:#c00;">解锁失败，可能数据损坏。</p>';
+        }
+      };
     } else if (item.lockType === 'password') {
       bodyEl.innerHTML = `
         <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
@@ -79,13 +121,15 @@ async function load() {
         </div>
         <p id="pwMsg" style="color:#c00;font-size:13px;height:18px;"></p>
       `;
-      document.getElementById('pwBtn').onclick = () => {
+      document.getElementById('pwBtn').onclick = async () => {
         const v = document.getElementById('pw').value;
-        if (v === (item.password || 'loveyou')) renderAll();
-        else document.getElementById('pwMsg').textContent = '密码不正确';
+        try {
+          const plain = await decryptText(item.cipher, v, item.iv, item.salt);
+          renderAll(plain);
+        } catch {
+          document.getElementById('pwMsg').textContent = '密码不正确';
+        }
       };
-    } else {
-      renderAll();
     }
   } catch (e) {
     document.getElementById('body').innerHTML = '<p>加载失败：' + e.message + '</p>';
