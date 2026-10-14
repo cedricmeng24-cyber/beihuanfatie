@@ -36,7 +36,6 @@
 </head>
 <body>
 
-<!-- 密码门禁 -->
 <div id="gate" class="gate">
   <pre>
 (\_/)
@@ -50,7 +49,6 @@
   <p id="gateMsg" style="color:#c00;font-size:13px;height:18px;"></p>
 </div>
 
-<!-- 主界面 -->
 <main id="app" style="display:none;">
   <h1>🐇 whity's desk</h1>
   <p class="sub">写点东西存进抽屉。</p>
@@ -106,11 +104,51 @@
 
 <script>
 const ADMIN_PWD = '0108';
-const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
 const API_PWD = 'kano1224';
+const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+const LOCKED_KEY = 'whity_locked_key_2026';
 
 let articles = [];
 let editingId = null;
+
+function b64encode(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function b64decode(s) {
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+async function deriveKey(password, salt, usage) {
+  const enc = new TextEncoder();
+  const km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    km, { name: 'AES-GCM', length: 256 }, false, usage
+  );
+}
+async function encryptText(text, password) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt, ['encrypt']);
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(text));
+  return { cipher: b64encode(new Uint8Array(cipher)), iv: b64encode(iv), salt: b64encode(salt) };
+}
+async function decryptText(cipherB64, password, ivB64, saltB64) {
+  const key = await deriveKey(password, b64decode(saltB64), ['decrypt']);
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: b64decode(ivB64) }, key, b64decode(cipherB64)
+  );
+  return new TextDecoder().decode(plain);
+}
+async function hashPwd(password) {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+  return b64encode(new Uint8Array(hash));
+}
 
 function checkGate() {
   const v = document.getElementById('gatePwd').value.trim();
@@ -173,20 +211,33 @@ function newArticle() {
   window.scrollTo({ top: document.getElementById('editor').offsetTop, behavior: 'smooth' });
 }
 
-function editArticle(id) {
+async function editArticle(id) {
   const a = articles.find(x => x.id === id);
   if (!a) return;
   editingId = id;
   document.getElementById('editorTitle').textContent = '编辑文章';
   document.getElementById('fTitle').value = a.title || '';
-  document.getElementById('fText').value = a.text || '';
   document.getElementById('fLock').value = a.lockType || 'none';
-  document.getElementById('fPwd').value = a.password || '';
+  document.getElementById('fPwd').value = '';
   document.getElementById('pwdBox').style.display = a.lockType === 'password' ? 'block' : 'none';
   document.getElementById('imgList').innerHTML = '';
   (a.images || []).forEach(im => addImgRow(im.src || ''));
   document.getElementById('delBtn').style.display = 'inline-block';
   document.getElementById('saveStatus').textContent = '';
+
+  const ta = document.getElementById('fText');
+  if (a.lockType === 'none') {
+    ta.value = a.text || '';
+  } else if (a.lockType === 'locked') {
+    try { ta.value = await decryptText(a.cipher, LOCKED_KEY, a.iv, a.salt); }
+    catch { ta.value = ''; }
+  } else {
+    const pwd = prompt('这篇设了密码，输入密码才能编辑：');
+    if (pwd === null) { ta.value = ''; return; }
+    try { ta.value = await decryptText(a.cipher, pwd, a.iv, a.salt); }
+    catch { alert('密码不对'); ta.value = ''; }
+  }
+
   document.getElementById('editor').style.display = 'block';
   window.scrollTo({ top: document.getElementById('editor').offsetTop, behavior: 'smooth' });
 }
@@ -195,16 +246,47 @@ function closeEditor() {
   document.getElementById('editor').style.display = 'none';
 }
 
-  
 function addImgRow(src) {
   const row = document.createElement('div');
   row.className = 'img-row';
-  const s = document.createElement('input'); s.type = 'text'; s.placeholder = '图片地址'; s.value = src; s.className = 'img-src';
-  const d = document.createElement('button'); d.type = 'button'; d.className = 'danger'; d.textContent = '×';
+  const s = document.createElement('input');
+  s.type = 'text';
+  s.placeholder = '图片地址';
+  s.value = src;
+  s.className = 'img-src';
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'danger';
+  d.textContent = '×';
   d.onclick = () => row.remove();
   row.append(s, d);
   document.getElementById('imgList').appendChild(row);
 }
+
+document.getElementById('fileInput').addEventListener('change', async () => {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return;
+  const st = document.getElementById('uploadStatus');
+  st.textContent = '上传中...'; st.className = 'status';
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let bin = ''; const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk)
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    const res = await fetch(`${WORKER_URL}/her-upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminPassword: API_PWD, filename: file.name, content: btoa(bin) })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '失败');
+    addImgRow(data.path);
+    st.textContent = '已上传';
+  } catch (e) {
+    st.textContent = '失败：' + e.message; st.className = 'status err';
+  } finally {
+    document.getElementById('fileInput').value = '';
+  }
 });
 
 async function saveArticle() {
@@ -212,27 +294,56 @@ async function saveArticle() {
   const title = document.getElementById('fTitle').value.trim();
   const text = document.getElementById('fText').value.trim();
   const lockType = document.getElementById('fLock').value;
-  const password = document.getElementById('fPwd').value.trim() || 'loveyou';
+  const userPwd = document.getElementById('fPwd').value.trim();
 
- const images = [];
-document.querySelectorAll('#imgList .img-row').forEach(row => {
-  const src = row.querySelector('.img-src').value.trim();
-  if (src) images.push({ src, alt: '' });
-});
+  const images = [];
+  document.querySelectorAll('#imgList .img-row').forEach(row => {
+    const src = row.querySelector('.img-src').value.trim();
+    if (src) images.push({ src, alt: '' });
+  });
 
   if (!title && !text && !images.length) {
     st.textContent = '居然选择什么都不写嘛！'; st.className = 'status err'; return;
   }
 
   st.textContent = '保存中...'; st.className = 'status';
+
   try {
+    const payload = {
+      adminPassword: API_PWD,
+      id: editingId,
+      title,
+      images,
+      lockType,
+      _plain: text,
+      _pwd: ''
+    };
+
+    if (lockType === 'none') {
+      payload.text = text;
+      payload.cipher = '';
+      payload.iv = '';
+      payload.salt = '';
+      payload.pwdHash = '';
+    } else {
+      const realPwd = lockType === 'locked' ? LOCKED_KEY : (userPwd || 'loveyou');
+      const enc = await encryptText(text, realPwd);
+      payload.text = '';
+      payload.cipher = enc.cipher;
+      payload.iv = enc.iv;
+      payload.salt = enc.salt;
+      payload.pwdHash = await hashPwd(realPwd);
+      payload._pwd = lockType === 'locked' ? '【自动上锁】' : (userPwd || 'loveyou');
+    }
+
     const res = await fetch(`${WORKER_URL}/her-save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: editingId, title, text, images, lockType, password, adminPassword: API_PWD })
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '失败');
+
     st.textContent = '已存进抽屉 ✒';
     setTimeout(() => { closeEditor(); loadList(); }, 1200);
   } catch (e) {
