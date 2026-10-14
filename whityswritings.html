@@ -13,7 +13,6 @@
   .images { display:grid; gap:16px; }
   figure { margin:0; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(118,75,162,.08); }
   img { display:block; width:100%; height:auto; }
-  figcaption { padding:10px 14px; color:#a78bfa; font-size:13px; }
   .lock { background:#f3ecff; border-left:4px solid #764ba2; border-radius:12px; padding:20px; color:#5b3fa8; }
   .back { display:inline-block; margin-bottom:24px; color:#764ba2; text-decoration:none; font-size:14px; }
   input[type=password] { padding:10px 12px; border:1px solid #ddd6fe; border-radius:10px; outline:none; font:inherit; }
@@ -64,11 +63,6 @@ async function load() {
           const img = document.createElement('img');
           img.src = im.src; img.alt = im.alt || ''; img.loading = 'lazy';
           fig.appendChild(img);
-          if (im.alt) {
-            const cap = document.createElement('figcaption');
-            cap.textContent = im.alt;
-            fig.appendChild(cap);
-          }
           imgs.appendChild(fig);
         });
         bodyEl.appendChild(imgs);
@@ -76,7 +70,7 @@ async function load() {
     }
 
     if (item.lockType === 'locked') {
-      bodyEl.innerHTML = '<div class="lock">🔒被锁起来了。</div>';
+      bodyEl.innerHTML = '<div class="lock">🔒 被锁起来了。</div>';
     } else if (item.lockType === 'password') {
       bodyEl.innerHTML = `
         <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
