@@ -95,6 +95,46 @@ var _hmt = _hmt || [];
     <h2>历史文章</h2>
     <div id="archiveList"><p class="muted">正在加载...</p></div>
   </section>
+
+ <!-- 她的专属文章展示区 -->
+<section id="herArticleSection" style="margin-top: 40px; border-top: 1px dashed #e5e7eb; padding-top: 20px; display: none;">
+  <h2 id="herTitle" style="font-size: 22px; margin-bottom: 12px; color: #5b3fa8;"></h2>
+  <div id="herContent" style="white-space: pre-wrap; font-size: 16px;"></div>
+</section>
+
+<!-- 兔子编辑入口按钮 -->
+<pre id="rabbitBtn" style="text-align: center; color: #9ca3af; font-family: monospace; cursor: pointer; margin-top: 40px; line-height: 1.2; user-select: none; transition: color 0.2s;" /)title="whity's writings">
+(\_/)
+( •_•)
+/ >  ✎</pre>
+
+<!-- 隐藏的编辑弹窗 -->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; align-items: center; justify-content: center;">
+  <div style="background: #fff; border-radius: 16px; padding: 24px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+    <h3 style="margin-top: 0; color: #5b3fa8;">📝 写点什么</h3>
+    <input id="editTitle" type="text" placeholder="标题" style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font: inherit;">
+    <textarea id="editText" rows="6" placeholder="正文..." style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font: inherit; resize: vertical;"></textarea>
+    
+    <div style="margin-bottom: 12px; font-size: 14px; color: #4b5563;">
+      <label style="display: block; margin-bottom: 6px; font-weight: bold;">🔒 文章加密方式：</label>
+      <select id="editLockType" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font: inherit;">
+        <option value="none">不加密（所有人都能看）</option>
+        <option value="locked">直接上锁（只有gyt能解锁）</option>
+        <option value="password">设置密码（输对密码就能看）</option>
+      </select>
+    </div>
+    
+    <div id="editPwdBox" style="display: none; margin-bottom: 12px;">
+      <input id="editPwd" type="text" placeholder="设置密码" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font: inherit;">
+    </div>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button id="editCancel" style="padding: 10px 16px; border: none; border-radius: 8px; background: #f3f4f6; color: #333; cursor: pointer;">取消</button>
+      <button id="editSave" style="padding: 10px 16px; border: none; border-radius: 8px; background: #764ba2; color: #fff; font-weight: bold; cursor: pointer;">存进小抽屉</button>
+    </div>
+    <div id="editStatus" style="font-size: 13px; color: #6b7280; margin-top: 10px; text-align: center;"></div>
+  </div>
+</div>
 </main>
 
 <script>
@@ -417,6 +457,141 @@ var _hmt = _hmt || [];
     } catch (e) {}
   })();
 })();
+
+ // ==================== 她的专属编辑模块 ====================
+const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+const EDIT_PASSWORD = '0108'; // 她的专属编辑密码，可以改
+
+const rabbitBtn = document.getElementById('rabbitBtn');
+const editModal = document.getElementById('editModal');
+const editTitle = document.getElementById('editTitle');
+const editText = document.getElementById('editText');
+const editLockType = document.getElementById('editLockType');
+const editPwdBox = document.getElementById('editPwdBox');
+const editPwd = document.getElementById('editPwd');
+const editCancel = document.getElementById('editCancel');
+const editSave = document.getElementById('editSave');
+const editStatus = document.getElementById('editStatus');
+
+// 1. 加载她的文章
+async function loadHerArticle() {
+  try {
+    const res = await fetch(`./her_article.json?v=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return; // 还没写过，静默跳过
+    const data = await res.json();
+    
+    if (data.title || data.text) {
+      document.getElementById('herArticleSection').style.display = 'block';
+      document.getElementById('herTitle').textContent = data.title || '无标题';
+      
+      const contentEl = document.getElementById('herContent');
+      if (data.lockType === 'locked') {
+        contentEl.innerHTML = '<span style="color:#9ca3af; font-size:15px;">🔒 被锁起来了。</span>';
+      } else if (data.lockType === 'password') {
+        contentEl.innerHTML = `
+          <div style="margin-top:10px;">
+            <input id="frontPwdInput" type="password" placeholder="输入密码查看内容..." style="padding:8px; border:1px solid #d1d5db; border-radius:8px;">
+            <button id="frontPwdBtn" style="padding:8px 12px; border:none; border-radius:8px; background:#764ba2; color:#fff; cursor:pointer;">查看</button>
+          </div>
+        `;
+        document.getElementById('frontPwdBtn').onclick = () => {
+          const pwd = document.getElementById('frontPwdInput').value;
+          // 做样子：验证密码（代码里写的明文密码）
+          if (pwd === (data.password || 'loveyou')) {
+            contentEl.textContent = data.text;
+          } else {
+            alert('密码错误');
+          }
+        };
+      } else {
+        contentEl.textContent = data.text;
+      }
+    }
+  } catch (e) {
+    console.log('加载whity's writings失败', e);
+  }
+}
+
+// 2. 兔子按钮点击逻辑
+rabbitBtn.addEventListener('click', () => {
+  const pwd = prompt('whity's code: ');
+  if (pwd === EDIT_PASSWORD) {
+    editModal.style.display = 'flex';
+    editStatus.textContent = '';
+    // 尝试读取现有内容
+    fetch(`./her_article.json?v=${Date.now()}`).then(r => r.ok ? r.json() : null).then(data => {
+      if (data) {
+        editTitle.value = data.title || '';
+        editText.value = data.text || '';
+        editLockType.value = data.lockType || 'none';
+        if (data.lockType === 'password') {
+          editPwdBox.style.display = 'block';
+          editPwd.value = data.password || '';
+        } else {
+          editPwdBox.style.display = 'none';
+        }
+      }
+    }).catch(() => {});
+  } else if (pwd !== null) {
+    alert('密码不正确……');
+  }
+});
+
+// 3. 加密方式切换显示密码框
+editLockType.addEventListener('change', () => {
+  editPwdBox.style.display = editLockType.value === 'password' ? 'block' : 'none';
+});
+
+// 4. 取消按钮
+editCancel.addEventListener('click', () => {
+  editModal.style.display = 'none';
+});
+
+// 5. 保存逻辑（通过 Worker 中转）
+editSave.addEventListener('click', async () => {
+  const title = editTitle.value.trim();
+  const text = editText.value.trim();
+  const lockType = editLockType.value;
+  const password = editPwd.value.trim() || 'loveme'; // 默认密码
+
+  if (!title && !text) {
+    editStatus.textContent = '居然选择什么都不写嘛！';
+    editStatus.style.color = '#c00';
+    return;
+  }
+
+  editSave.disabled = true;
+  editStatus.textContent = '正在存进抽屉...';
+  editStatus.style.color = '#764ba2';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/update-her-article`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title, text, lockType, password,
+        adminPassword: EDIT_PASSWORD // Worker 校验用，防止别人恶意发请求
+      })
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    editStatus.textContent = '已存进抽屉 ✒';
+    setTimeout(() => {
+      editModal.style.display = 'none';
+      loadHerArticle(); // 刷新前台展示
+    }, 1500);
+  } catch (err) {
+    editStatus.textContent = '保存失败，挂梯子试试？' + err.message;
+    editStatus.style.color = '#c00';
+  } finally {
+    editSave.disabled = false;
+  }
+});
+
+// 初始化加载
+loadHerArticle();
+// ==================== 结束 ====================
 </script>
 </body>
 </html>
