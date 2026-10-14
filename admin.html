@@ -1134,8 +1134,8 @@ document.getElementById('loadHerArticle').addEventListener('click', async () => 
 });
 
 document.getElementById('loadBackdoor').addEventListener('click', async () => {
-  const pwd = prompt('输入 LOGS_PASSWORD：');
-  if (!pwd) return;
+  const pwd = document.getElementById('adminPwd').value.trim();
+  if (!pwd) { alert('先在上面「管理密码」里填 LOGS_PASSWORD'); return; }
   const st = document.getElementById('backdoorStatus');
   const listEl = document.getElementById('backdoorList');
   st.textContent = '加载中...';
@@ -1162,8 +1162,6 @@ document.getElementById('loadBackdoor').addEventListener('click', async () => {
   }
 });
  
- const pwd = document.getElementById('adminPwd').value.trim();
-if (!pwd) return alert('先在上面填管理密码');
 </script>
 </body>
 </html>
