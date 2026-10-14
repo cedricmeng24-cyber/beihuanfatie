@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>whity's writings</title>
+<style>
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:#faf7ff; color:#3f3f46; line-height:1.8; }
+  main { max-width:860px; margin:0 auto; padding:32px 18px 64px; }
+  h1 { color:#5b3fa8; font-size:clamp(24px,5vw,34px); margin:0 0 8px; }
+  .date { color:#a78bfa; font-size:13px; margin-bottom:24px; }
+  .text { white-space:pre-wrap; font-size:17px; margin-bottom:24px; }
+  .images { display:grid; gap:16px; }
+  figure { margin:0; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(118,75,162,.08); }
+  img { display:block; width:100%; height:auto; }
+  figcaption { padding:10px 14px; color:#a78bfa; font-size:13px; }
+  .lock { background:#f3ecff; border-left:4px solid #764ba2; border-radius:12px; padding:20px; color:#5b3fa8; }
+  .back { display:inline-block; margin-bottom:24px; color:#764ba2; text-decoration:none; font-size:14px; }
+  input[type=password] { padding:10px 12px; border:1px solid #ddd6fe; border-radius:10px; outline:none; font:inherit; }
+  button { padding:10px 16px; border:none; border-radius:10px; background:#764ba2; color:#fff; font:inherit; cursor:pointer; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← 返回</a>
+  <h1 id="title">加载中...</h1>
+  <div class="date" id="date"></div>
+  <div id="body"></div>
+</main>
+
+<script>
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+
+async function load() {
+  if (!id) { document.getElementById('body').innerHTML = '<p>缺少文章 ID</p>'; return; }
+  try {
+    const res = await fetch(`./her_article.json?v=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [data];
+    const item = list.find(x => x.id === id);
+    if (!item) { document.getElementById('body').innerHTML = '<p>找不到这篇文章</p>'; return; }
+
+    document.getElementById('title').textContent = item.title || '无标题';
+    document.getElementById('date').textContent = item.updatedAt || '';
+
+    const bodyEl = document.getElementById('body');
+    bodyEl.innerHTML = '';
+
+    function renderAll() {
+      bodyEl.innerHTML = '';
+      const textEl = document.createElement('div');
+      textEl.className = 'text';
+      textEl.textContent = item.text || '';
+      bodyEl.appendChild(textEl);
+
+      if (Array.isArray(item.images) && item.images.length) {
+        const imgs = document.createElement('div');
+        imgs.className = 'images';
+        item.images.forEach(im => {
+          if (!im || !im.src) return;
+          const fig = document.createElement('figure');
+          const img = document.createElement('img');
+          img.src = im.src; img.alt = im.alt || ''; img.loading = 'lazy';
+          fig.appendChild(img);
+          if (im.alt) {
+            const cap = document.createElement('figcaption');
+            cap.textContent = im.alt;
+            fig.appendChild(cap);
+          }
+          imgs.appendChild(fig);
+        });
+        bodyEl.appendChild(imgs);
+      }
+    }
+
+    if (item.lockType === 'locked') {
+      bodyEl.innerHTML = '<div class="lock">🔒被锁起来了。</div>';
+    } else if (item.lockType === 'password') {
+      bodyEl.innerHTML = `
+        <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+          <input type="password" id="pw" placeholder="输入密码查看...">
+          <button id="pwBtn">查看</button>
+        </div>
+        <p id="pwMsg" style="color:#c00;font-size:13px;height:18px;"></p>
+      `;
+      document.getElementById('pwBtn').onclick = () => {
+        const v = document.getElementById('pw').value;
+        if (v === (item.password || 'loveyou')) renderAll();
+        else document.getElementById('pwMsg').textContent = '密码不正确';
+      };
+    } else {
+      renderAll();
+    }
+  } catch (e) {
+    document.getElementById('body').innerHTML = '<p>加载失败：' + e.message + '</p>';
+  }
+}
+load();
+</script>
+</body>
+</html>
