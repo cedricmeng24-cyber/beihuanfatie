@@ -460,22 +460,7 @@ var _hmt = _hmt || [];
   })();
 })();
 
- // ==================== 她的专属编辑模块 ====================
-const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
-const EDIT_PASSWORD = '0108'; // 她的专属编辑密码，可以改
-
-const rabbitBtn = document.getElementById('rabbitBtn');
-const editModal = document.getElementById('editModal');
-const editTitle = document.getElementById('editTitle');
-const editText = document.getElementById('editText');
-const editLockType = document.getElementById('editLockType');
-const editPwdBox = document.getElementById('editPwdBox');
-const editPwd = document.getElementById('editPwd');
-const editCancel = document.getElementById('editCancel');
-const editSave = document.getElementById('editSave');
-const editStatus = document.getElementById('editStatus');
-
-// 1. 加载她的文章
+// ==================== 她的文章归档区 ====================
 async function loadHerArticle() {
   const archiveEl = document.getElementById('herArchive');
   const listEl = document.getElementById('herArchiveList');
@@ -501,86 +486,6 @@ async function loadHerArticle() {
     });
   } catch (e) { console.log(e); }
 }
-loadHerArticle();
- 
-// 2. 兔子按钮点击逻辑
-rabbitBtn.addEventListener('click', () => {
-  const pwd = prompt("whity's code: ");
-  if (pwd === EDIT_PASSWORD) {
-    editModal.style.display = 'flex';
-    editStatus.textContent = '';
-    // 尝试读取现有内容
-    fetch(`./her_article.json?v=${Date.now()}`).then(r => r.ok ? r.json() : null).then(data => {
-      if (data) {
-        editTitle.value = data.title || '';
-        editText.value = data.text || '';
-        editLockType.value = data.lockType || 'none';
-        if (data.lockType === 'password') {
-          editPwdBox.style.display = 'block';
-          editPwd.value = data.password || '';
-        } else {
-          editPwdBox.style.display = 'none';
-        }
-      }
-    }).catch(() => {});
-  } else if (pwd !== null) {
-    alert('密码不正确……');
-  }
-});
-
-// 3. 加密方式切换显示密码框
-editLockType.addEventListener('change', () => {
-  editPwdBox.style.display = editLockType.value === 'password' ? 'block' : 'none';
-});
-
-// 4. 取消按钮
-editCancel.addEventListener('click', () => {
-  editModal.style.display = 'none';
-});
-
-// 5. 保存逻辑（通过 Worker 中转）
-editSave.addEventListener('click', async () => {
-  const title = editTitle.value.trim();
-  const text = editText.value.trim();
-  const lockType = editLockType.value;
-  const password = editPwd.value.trim() || 'loveme'; // 默认密码
-
-  if (!title && !text) {
-    editStatus.textContent = '居然选择什么都不写嘛！';
-    editStatus.style.color = '#c00';
-    return;
-  }
-
-  editSave.disabled = true;
-  editStatus.textContent = '正在存进抽屉...';
-  editStatus.style.color = '#764ba2';
-
-  try {
-    const res = await fetch(`${WORKER_URL}/update-her-article`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title, text, lockType, password,
-        adminPassword: EDIT_PASSWORD // Worker 校验用，防止别人恶意发请求
-      })
-    });
-
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    editStatus.textContent = '已存进抽屉 ✒';
-    setTimeout(() => {
-      editModal.style.display = 'none';
-      loadHerArticle(); // 刷新前台展示
-    }, 1500);
-  } catch (err) {
-    editStatus.textContent = '保存失败，挂梯子试试？' + err.message;
-    editStatus.style.color = '#c00';
-  } finally {
-    editSave.disabled = false;
-  }
-});
-
-// 初始化加载
 loadHerArticle();
 // ==================== 结束 ====================
 </script>
