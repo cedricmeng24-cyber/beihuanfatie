@@ -126,13 +126,13 @@ var _hmt = _hmt || [];
   </section>
 
   <!-- 她的文章归档区（页面最底部） -->
-  <section id="herArchive" style="display:none; margin-top:48px; padding-top:24px; border-top:1px dashed #e5e7eb;">
-    <h2 style="font-size:20px; color:#764ba2; margin-bottom:20px;">🐇whity's writings</h2>
-    <div id="herArchiveList"></div>
-  </section>
+ <section id="herArchive" style="display:none; margin-top:48px; padding-top:24px; border-top:1px dashed #e5e7eb;">
+   <h2 style="font-size:20px; color:#764ba2; margin-bottom:20px;">🐇 whity's writings</h2>
+   <div id="herArchiveList"></div>
+ </section>
  
   <!-- 兔子编辑入口按钮 -->
-    <pre id="rabbitBtn" title="whity's writings" style="text-align: center; color: #9ca3af; font-family: monospace; cursor: pointer; margin-top: 40px; line-height: 1.2; user-select: none; transition: color 0.2s;">
+  <pre onclick="location.href='whityedits.html'" title="whity's writings" style="text-align:center;color:#9ca3af;font-family:monospace;cursor:pointer;margin-top:40px;line-height:1.2;user-select:none;">
 (\_/)
 ( •_•)
 / >  ✎</pre>
@@ -479,11 +479,9 @@ const editStatus = document.getElementById('editStatus');
 async function loadHerArticle() {
   const archiveEl = document.getElementById('herArchive');
   const listEl = document.getElementById('herArchiveList');
-
   try {
     const res = await fetch(`./her_article.json?v=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) return;
-
     const data = await res.json();
     const list = Array.isArray(data) ? data : [data];
     if (!list.length) return;
@@ -492,66 +490,17 @@ async function loadHerArticle() {
     listEl.innerHTML = '';
 
     list.forEach(item => {
-      const card = document.createElement('article');
-      card.style.cssText = `
-        background: #faf7ff;
-        border-left: 4px solid #764ba2;
-        border-radius: 12px;
-        padding: 18px 20px;
-        margin-bottom: 18px;
-        box-shadow: 0 4px 16px rgba(118, 75, 162, .08);
+      const row = document.createElement('a');
+      row.href = `whityswritings.html?id=${encodeURIComponent(item.id)}`;
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:12px 4px;border-bottom:1px solid #f0eaff;text-decoration:none;color:#5b3fa8;font-size:15px;';
+      row.innerHTML = `
+        <span>${item.title || '无题'}${item.lockType && item.lockType !== 'none' ? ' 🔒' : ''}</span>
+        <span style="color:#a78bfa;font-size:13px;">${(item.updatedAt || '').split(' ')[0] || ''}</span>
       `;
-
-      const title = document.createElement('h3');
-      title.textContent = item.title || '无标题';
-      title.style.cssText = 'margin:0 0 6px; color:#5b3fa8; font-size:18px;';
-
-      const time = document.createElement('div');
-      time.textContent = item.updatedAt || '';
-      time.style.cssText = 'font-size:12px; color:#a78bfa; margin-bottom:10px;';
-
-      const body = document.createElement('div');
-      body.style.cssText = 'white-space:pre-wrap; font-size:15px; color:#3f3f46; line-height:1.75;';
-
-      // 加密处理
-      if (item.lockType === 'locked') {
-        body.innerHTML = '<span style="color:#a78bfa;">🔒被锁起来了。</span>';
-      } else if (item.lockType === 'password') {
-        body.innerHTML = `
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input type="password" data-pwd-input="${item.id}" placeholder="输入密码查看..." style="flex:1; padding:8px 10px; border:1px solid #ddd6fe; border-radius:8px; outline:none;">
-            <button data-pwd-btn="${item.id}" style="padding:8px 14px; border:none; border-radius:8px; background:#764ba2; color:#fff; cursor:pointer;">查看</button>
-          </div>
-          <div data-pwd-text="${item.id}" style="display:none; margin-top:10px;"></div>
-        `;
-      } else {
-        body.textContent = item.text || '';
-      }
-
-      card.append(title, time, body);
-      listEl.appendChild(card);
-
-      // 密码查看逻辑
-      if (item.lockType === 'password') {
-        const btn = card.querySelector(`[data-pwd-btn="${item.id}"]`);
-        const input = card.querySelector(`[data-pwd-input="${item.id}"]`);
-        const target = card.querySelector(`[data-pwd-text="${item.id}"]`);
-        btn.addEventListener('click', () => {
-          if (input.value === (item.password || 'loveyou')) {
-            target.textContent = item.text || '';
-            target.style.display = 'block';
-            input.parentElement.style.display = 'none';
-          } else {
-            alert('密码不正确');
-          }
-        });
-      }
+      listEl.appendChild(row);
     });
-  } catch (e) {
-    console.log('加载失败', e);
-  }
+  } catch (e) { console.log(e); }
 }
-
 loadHerArticle();
  
 // 2. 兔子按钮点击逻辑
