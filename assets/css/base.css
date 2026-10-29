@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    To Whity — 共享设计系统
    奶油 / 珊瑚 / 深墨（日记页）+ 紫（她的页面）
    来自 DESIGN-claude.md，alpha 版 Claude.com 设计体系
@@ -116,7 +116,9 @@ img { max-width: 100%; height: auto; display: block; }
 button { font-family: inherit; cursor: pointer; }
 input, textarea, select { font-family: inherit; font-size: inherit; color: var(--ink); }
 
-::selection { background: var(--primary-soft); color: var(--ink); }
+/* 选区：深藏青底 + 奶白字 */
+::selection { background: #1b315b; color: #faf9f5; }
+::-moz-selection { background: #1b315b; color: #faf9f5; }
 
 /* 键盘可达性：只在键盘操作时显示焦点环 */
 :focus-visible {
