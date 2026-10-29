@@ -6,15 +6,15 @@
 
 :root {
   /* ---- 主色 ---- */
-  --primary: #cc785c;
-  --primary-active: #a9583e;
+  --primary: #ffb578;
+  --primary-active: #cc785c;
   --primary-disabled: #e6dfd8;
-  --primary-soft: rgba(204, 120, 92, 0.12);
+  --primary-soft: rgba(66,185,131,1.00);
 
   /* ---- 墨色字阶 ---- */
   --ink: #141413;
   --body-strong: #252523;
-  --body: #3d3d3a;
+  --body: #181715;
   --muted: #6c6a64;
   --muted-soft: #8e8b82;
 
@@ -25,7 +25,7 @@
   --surface-cream-strong: #e8e0d2;
   --surface-dark: #181715;
   --surface-dark-elevated: #252320;
-  --surface-dark-soft: #1f1e1b;
+  --surface-dark-soft: #1b315b;
 
   /* ---- 线 ---- */
   --hairline: #e6dfd8;
@@ -355,7 +355,7 @@ main {
 }
 
 .text {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.85;
   color: var(--body);
   white-space: pre-wrap;
@@ -835,9 +835,9 @@ section:first-of-type { margin-top: var(--s-12); }
 
 .f-logo {
   display: block;
-  height: 34px;
+  height: 39px;
   width: auto;
-  opacity: 0.94;
+  opacity: 0.98;
   transition: opacity 0.2s ease;
 }
 
@@ -955,7 +955,7 @@ section:first-of-type { margin-top: var(--s-12); }
   #title { font-size: 28px; letter-spacing: -0.3px; }
   .band-title { font-size: 22px; }
   .comments form { padding: var(--s-4); }
-  .text { font-size: 15.5px; line-height: 1.85; }
+  .text { font-size: 17px; line-height: 1.85; }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
