@@ -17,7 +17,7 @@
   var Splash = {
     el: null,
     key: 'towhity_splash_seen',
-    duration: 2000,
+    duration: 2900,
 
     init: function () {
       this.el = document.getElementById('splash');
