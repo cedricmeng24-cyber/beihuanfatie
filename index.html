@@ -207,10 +207,8 @@
   function restartEnter(node) {
     if (!node || TW.reduceMotion) return;
     node.classList.remove('entered');
-    node.classList.add('settled');
     // 强制重排后再标记，让过渡重新跑
     void node.offsetWidth;
-    node.classList.remove('settled');
     requestAnimationFrame(function () {
       if (node.getBoundingClientRect().top < window.innerHeight) {
         node.classList.add('entered');
