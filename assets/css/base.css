@@ -837,7 +837,7 @@ section:first-of-type { margin-top: var(--s-12); }
 
 .f-logo {
   display: block;
-  height: 39px;
+  height: 42px;
   width: auto;
   opacity: 0.98;
   transition: opacity 0.2s ease;
