@@ -131,7 +131,7 @@
               // 动画播完把 will-change 撤掉
               setTimeout(function () {
                 en.target.classList.add('settled');
-              }, 900);
+              }, 2100);
             }
           });
         }, {
