@@ -451,16 +451,16 @@
         }
 
         document.title = (item.title || '无标题') + " · Whity's writings";
-        TW.typeTitle(titleEl, item.title || '无标题');
+        TW.typeTitle(titleEl, item.title || '无标题', function () {
+          if (item.lockType === 'none' || !item.lockType) {
+            renderAll(item, item.text || '');
+          } else if (item.lockType === 'locked') {
+            renderLocked(item);
+          } else if (item.lockType === 'password') {
+            renderPassword(item);
+          }
+        });
         dateEl.textContent = item.updatedAt || '';
-
-        if (item.lockType === 'none' || !item.lockType) {
-          renderAll(item, item.text || '');
-        } else if (item.lockType === 'locked') {
-          renderLocked(item);
-        } else if (item.lockType === 'password') {
-          renderPassword(item);
-        }
       })
       .catch(function (e) {
         bodyEl.innerHTML = '<p class="muted">加载失败：' + TW.escapeHtml(e.message) + '</p>';
