@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#faf8f7">
-<title>whity's writings</title>
+<title>Whity's writings</title>
 <link rel="preload" href="./fonts/noto-serif-sc-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./assets/css/base.css">
 <style>
@@ -228,7 +228,6 @@
     background: var(--plum);
     color: rgba(255, 255, 255, 0.62);
     padding: var(--s-8) var(--s-6);
-    margin-top: var(--s-24);
     font-size: 13px;
   }
   .w-footer .inner {
@@ -247,12 +246,15 @@
     .w-text { font-size: 16px; }
     .w-footer { padding: var(--s-6) var(--s-5); }
   }
+
+    body { position: relative; min-height: 100vh; min-height: 100dvh; padding-bottom: 120px; }
+  .w-footer { position: absolute; left: 0; right: 0; bottom: 0; margin-top: 0; }
 </style>
 </head>
 <body>
 
 <nav class="w-nav">
-  <a class="w-brand" href="./index.html">whity's writings</a>
+  <a class="w-brand" href="./index.html">Whity's writings</a>
   <a class="w-link" href="./index.html">回日记 →</a>
 </nav>
 
@@ -448,7 +450,7 @@
           return;
         }
 
-        document.title = (item.title || '无标题') + " · whity's writings";
+        document.title = (item.title || '无标题') + " · Whity's writings";
         TW.typeTitle(titleEl, item.title || '无标题');
         dateEl.textContent = item.updatedAt || '';
 
