@@ -53,7 +53,7 @@
         var span = document.createElement('span');
         span.className = 'ch';
         span.textContent = ch;
-        span.style.animationDelay = (0.55 + i * 0.16) + 's';
+        span.style.animationDelay = (0.55 + i * 0.12) + 's';
         frag.appendChild(span);
       }
       poem.appendChild(frag);
