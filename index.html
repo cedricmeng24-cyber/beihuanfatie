@@ -170,11 +170,14 @@
 
     // 标题：第一次进来打字机，切换文章直接换
     if (animate) {
-      TW.typeTitle(el.title, post.title || '(无标题)');
+      TW.typeTitle(el.title, post.title || '(无标题)', function () {
+        restartEnter(el.text);
+      });
     } else {
       el.title.textContent = post.title || '(无标题)';
+      restartEnter(el.text);
     }
-
+    
     var imgs = Array.isArray(post.images) ? post.images : [];
     imgs.forEach(function (item) {
       if (!item || !item.src) return;
@@ -199,8 +202,6 @@
     });
 
     if (imgs.length) TW.Enter.watch(el.images.querySelectorAll('[data-enter]'));
-    // 正文每次换内容都要重新进入
-    restartEnter(el.text);
   }
 
   function restartEnter(node) {
