@@ -227,7 +227,7 @@ main {
   height: auto;
   opacity: 0;
   transform: translateY(10px) scale(0.985);
-  animation: splashLogo 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+  animation: splashLogo 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
 }
 
 @keyframes splashLogo {
