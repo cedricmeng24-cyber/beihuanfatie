@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf9f5">
+<meta name="description" content="写给一个人，也写给路过的人。">
+<title>To Whity.</title>
+<link rel="preload" href="./fonts/noto-serif-sc-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./assets/css/base.css">
+</head>
+<body>
+
+<!-- ============ 开屏 ============ -->
+<div id="splash" aria-hidden="true">
+  <img class="splash-logo" src="./images/logo-towhity@2x.png" alt="" width="720" height="259" fetchpriority="high">
+  <p class="splash-poem" data-text="世事生成君会否，人间春去落花深">世事生成君会否，人间春去落花深</p>
+</div>
+
+<!-- ============ 顶栏 ============ -->
+<nav class="top-nav">
+  <a class="nav-brand" href="./index.html">To Whity.</a>
+  <a class="nav-link" href="./whityswritings.html">她的文章 →</a>
+</nav>
+
+<main>
+  <p id="notice" class="muted" hidden></p>
+
+  <a class="back" id="backLink" href="./index.html" hidden>
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    返回最新
+  </a>
+
+  <!-- ============ 正文 ============ -->
+  <article>
+    <p class="post-date" id="postDate" data-enter></p>
+    <h1 id="title"></h1>
+    <div id="text" class="text" data-enter></div>
+    <div id="images" class="images"></div>
+  </article>
+
+  <!-- ============ 留言 ============ -->
+  <section class="comments" data-enter>
+    <h2 class="band-title">留言</h2>
+    <form id="commentForm">
+      <input id="commentName" type="text" maxlength="20" placeholder="昵称（可不填）">
+      <textarea id="commentText" maxlength="500" rows="3" placeholder="说点什么…" required></textarea>
+      <div class="comment-actions">
+        <button type="submit" id="commentSubmit" class="btn-primary">发送</button>
+        <span id="commentStatus"></span>
+      </div>
+    </form>
+    <div id="commentList"><p class="muted">正在加载留言…</p></div>
+  </section>
+
+  <!-- ============ 归档 ============ -->
+  <section class="archive" data-enter>
+    <h2 class="band-title">历史文章</h2>
+    <div id="archiveList"><p class="muted">正在加载…</p></div>
+  </section>
+
+  <!-- ============ 她的归档 ============ -->
+  <section id="herArchive" data-enter hidden>
+    <h2 class="band-title">whity's writings</h2>
+    <div id="herArchiveList"></div>
+  </section>
+
+  <button class="bunny" id="bunnyBtn" title="whity's writings"
+          onclick="location.href='whityedits.html'">(\_/)
+( •_•)
+/ &gt;  ✎</button>
+</main>
+
+<!-- ============ 页脚 ============ -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <span class="f-brand">
+      <img class="f-logo" src="./images/logo-towhity-light@1x.png" alt="To Whity" width="320" height="115" loading="lazy">
+    </span>
+    <span class="f-note">写给一个人，也写给路过的人。</span>
+  </div>
+</footer>
+
+<!-- ============ 写点什么（隐藏弹窗） ============ -->
+<div id="editModal" class="modal-mask">
+  <div class="modal-card">
+    <h3>写点什么</h3>
+    <label class="modal-label" for="editTitle">标题</label>
+    <input id="editTitle" type="text" placeholder="给这一篇起个名字">
+
+    <label class="modal-label" for="editText">正文</label>
+    <textarea id="editText" placeholder="从今天开始写…"></textarea>
+
+    <label class="modal-label" for="editLockType">文章加密方式</label>
+    <select id="editLockType">
+      <option value="none">不加密（所有人都能看）</option>
+      <option value="locked">直接上锁（只有 gyt 能解锁）</option>
+      <option value="password">设置密码（输对密码就能看）</option>
+    </select>
+
+    <div id="editPwdBox" hidden>
+      <label class="modal-label" for="editPwd">密码</label>
+      <input id="editPwd" type="text" placeholder="设置一个密码">
+    </div>
+
+    <div class="modal-actions">
+      <button id="editCancel" class="btn-secondary" type="button">取消</button>
+      <button id="editSave" class="btn-primary" type="button">存进小抽屉</button>
+    </div>
+    <div id="editStatus" class="modal-status"></div>
+  </div>
+</div>
+
+<script src="./assets/js/motion.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+  var INDEX_URL = './posts/index.json';
+
+  var el = {};
+  ['notice','backLink','title','postDate','text','images','commentForm',
+   'commentName','commentText','commentSubmit','commentStatus','commentList',
+   'archiveList','herArchive','herArchiveList'].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+
+  var posts = [];
+  var currentPostId = '';
+  var pageReady = false;
+
+  /* ---------- 工具 ---------- */
+
+  function looksLikeFilename(s) {
+    if (!s) return true;
+    return /\.(jpe?g|png|gif|webp|bmp|svg|heic|avif)$/i.test(s.trim());
+  }
+
+  function showNotice(msg) {
+    if (!el.notice) return;
+    el.notice.textContent = msg;
+    el.notice.hidden = false;
+  }
+
+  function queryId() {
+    try {
+      var sp = new URLSearchParams(location.search);
+      return sp.get('post') || sp.get('p') || '';
+    } catch (e) { return ''; }
+  }
+
+  function prettyDate(s) {
+    var m = String(s || '').match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    if (!m) return s || '';
+    return m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日';
+  }
+
+  /* ---------- 正文渲染 ---------- */
+
+  function renderPost(post, animate) {
+    document.title = post.title || 'To Whity.';
+    el.postDate.textContent = prettyDate(post.date);
+    el.text.textContent = post.text || '';
+    el.images.innerHTML = '';
+
+    // 标题：第一次进来打字机，切换文章直接换
+    if (animate) {
+      TW.typeTitle(el.title, post.title || '(无标题)');
+    } else {
+      el.title.textContent = post.title || '(无标题)';
+    }
+
+    var imgs = Array.isArray(post.images) ? post.images : [];
+    imgs.forEach(function (item) {
+      if (!item || !item.src) return;
+
+      var figure = document.createElement('figure');
+      figure.setAttribute('data-enter', 'image');
+
+      var img = document.createElement('img');
+      img.src = item.src;
+      img.alt = looksLikeFilename(item.alt) ? '' : (item.alt || '');
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      figure.appendChild(img);
+
+      if (item.alt && !looksLikeFilename(item.alt)) {
+        var cap = document.createElement('figcaption');
+        cap.textContent = item.alt;
+        figure.appendChild(cap);
+      }
+
+      el.images.appendChild(figure);
+    });
+
+    if (imgs.length) TW.Enter.watch(el.images.querySelectorAll('[data-enter]'));
+    // 正文每次换内容都要重新进入
+    restartEnter(el.text);
+  }
+
+  function restartEnter(node) {
+    if (!node || TW.reduceMotion) return;
+    node.classList.remove('entered');
+    node.classList.add('settled');
+    // 强制重排后再标记，让过渡重新跑
+    void node.offsetWidth;
+    node.classList.remove('settled');
+    requestAnimationFrame(function () {
+      if (node.getBoundingClientRect().top < window.innerHeight) {
+        node.classList.add('entered');
+      } else {
+        TW.Enter.watch([node]);
+      }
+    });
+  }
+
+  /* ---------- 归档（两层：月份 > 周） ---------- */
+
+  function renderArchive() {
+    el.archiveList.innerHTML = '';
+
+    if (!posts.length) {
+      el.archiveList.innerHTML = '<p class="muted">暂无历史文章。</p>';
+      return;
+    }
+
+    TW.buildArchive(posts, currentPostId, {
+      container: el.archiveList,
+      newestOnly: true,
+      onNavigate: function (id) { navigate(id); }
+    });
+  }
+
+  /* ---------- 留言 ---------- */
+
+  function renderComments(list) {
+    el.commentList.innerHTML = '';
+
+    if (!list.length) {
+      el.commentList.innerHTML = '<p class="muted">还没有留言。</p>';
+      return;
+    }
+
+    var frag = document.createDocumentFragment();
+    list.forEach(function (c) {
+      var div = document.createElement('div');
+      div.className = 'comment';
+
+      var head = document.createElement('div');
+      head.className = 'comment-head';
+
+      var name = document.createElement('span');
+      name.className = 'comment-name';
+      name.textContent = c.name || '匿名访客';
+
+      var time = document.createElement('span');
+      time.className = 'comment-time';
+      time.textContent = c.localTime || '';
+
+      head.appendChild(name);
+      head.appendChild(time);
+
+      var t = document.createElement('div');
+      t.className = 'comment-body';
+      t.textContent = c.text || '';
+
+      div.appendChild(head);
+      div.appendChild(t);
+      frag.appendChild(div);
+    });
+    el.commentList.appendChild(frag);
+
+    TW.Enter.watch(el.commentList.querySelectorAll('.comment'));
+    Array.prototype.forEach.call(el.commentList.querySelectorAll('.comment'), function (n) {
+      n.classList.add('entered');
+    });
+  }
+
+  function loadComments() {
+    if (!currentPostId) {
+      el.commentList.innerHTML = '<p class="muted">还没有文章，无法留言。</p>';
+      return;
+    }
+
+    el.commentList.innerHTML = '<p class="muted">正在加载留言…</p>';
+
+    fetch(WORKER_URL + '/comments?post=' + encodeURIComponent(currentPostId) + '&_=' + Date.now())
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (list) {
+        renderComments(Array.isArray(list) ? list : []);
+      })
+      .catch(function () {
+        el.commentList.innerHTML = '<p class="muted">留言加载失败。</p>';
+      });
+  }
+
+  /* ---------- 文章切换 ---------- */
+
+  function updateBackLink() {
+    var isNewest = posts.length && posts[0].id === currentPostId;
+    el.backLink.hidden = !posts.length || isNewest;
+  }
+
+  function showPost(id) {
+    currentPostId = id;
+    updateBackLink();
+    renderArchive();
+    loadComments();
+
+    var entry = null;
+    for (var i = 0; i < posts.length; i++) {
+      if (posts[i].id === id) { entry = posts[i]; break; }
+    }
+
+    renderPost(entry || { id: id }, !pageReady);
+    pageReady = true;
+
+    fetch('./posts/' + encodeURIComponent(id) + '.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (full) {
+        renderPost(full, false);
+      })
+      .catch(function () {
+        showNotice('文章正文加载失败，请稍后刷新页面。');
+      });
+  }
+
+  function navigate(id) {
+    try { history.pushState({ p: id }, '', '?post=' + encodeURIComponent(id)); } catch (e) {}
+    showPost(id);
+    window.scrollTo({ top: 0, behavior: TW.reduceMotion ? 'auto' : 'smooth' });
+  }
+
+  function loadLegacy() {
+    currentPostId = 'legacy';
+    el.backLink.hidden = true;
+    renderArchive();
+
+    fetch('./content.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        renderPost({
+          title: data.title,
+          text: data.text,
+          images: data.images,
+          date: data.updatedAt
+        }, !pageReady);
+        pageReady = true;
+      })
+      .catch(function () {
+        renderPost({ title: '暂无内容', text: '后台还没有发布文章。' }, false);
+      })
+      .then(function () {
+        loadComments();
+      });
+  }
+
+  /* ---------- 启动 ---------- */
+
+  function boot() {
+    fetch(INDEX_URL + '?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) return [];
+        return res.json();
+      })
+      .then(function (data) {
+        posts = Array.isArray(data) ? data : [];
+
+        if (!posts.length) { loadLegacy(); return; }
+
+        var id = queryId();
+        var found = posts.some(function (p) { return p.id === id; });
+        showPost(found ? id : posts[0].id);
+      })
+      .catch(function () {
+        posts = [];
+        loadLegacy();
+      });
+  }
+
+  /* ---------- 留言提交 ---------- */
+
+  el.commentForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var content = el.commentText.value.trim();
+    if (!content || !currentPostId) return;
+
+    el.commentSubmit.disabled = true;
+    el.commentStatus.textContent = '发送中…';
+    el.commentStatus.className = '';
+
+    fetch(WORKER_URL + '/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        post: currentPostId,
+        name: el.commentName.value.trim(),
+        text: content
+      })
+    })
+      .then(function (res) {
+        if (res.status === 429) throw new Error('发送太频繁，稍后再试。');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        el.commentText.value = '';
+        el.commentStatus.textContent = '已发送。';
+        el.commentStatus.className = 'ok';
+        return loadComments();
+      })
+      .catch(function (err) {
+        el.commentStatus.textContent = '发送失败：' + err.message;
+        el.commentStatus.className = 'error';
+      })
+      .then(function () {
+        el.commentSubmit.disabled = false;
+        setTimeout(function () {
+          el.commentStatus.textContent = '';
+          el.commentStatus.className = '';
+        }, 3000);
+      });
+  });
+
+  el.backLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (posts.length) navigate(posts[0].id);
+  });
+
+  window.addEventListener('popstate', function () {
+    if (!posts.length) return;
+    var id = queryId();
+    var found = posts.some(function (p) { return p.id === id; });
+    showPost(found ? id : posts[0].id);
+  });
+
+  /* ---------- 她的归档 ---------- */
+
+  function loadHerArticle() {
+    fetch('./her_article.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then(function (data) {
+        if (data === null) return;
+        var list = Array.isArray(data) ? data : [data];
+        if (!list.length) return;
+
+        el.herArchive.hidden = false;
+        el.herArchiveList.innerHTML = '';
+
+        list.forEach(function (item) {
+          var row = document.createElement('a');
+          row.className = 'her-row';
+          row.href = 'whityswritings.html?id=' + encodeURIComponent(item.id);
+
+          var left = document.createElement('span');
+          left.className = 't';
+          left.textContent = item.title || '无题';
+          if (item.lockType && item.lockType !== 'none') {
+            var lock = document.createElement('span');
+            lock.className = 'lock';
+            lock.textContent = '🔒';
+            left.appendChild(lock);
+          }
+
+          var right = document.createElement('span');
+          right.className = 'd';
+          right.textContent = (item.updatedAt || '').split(' ')[0] || '';
+
+          row.appendChild(left);
+          row.appendChild(right);
+          el.herArchiveList.appendChild(row);
+        });
+
+        TW.Enter.watch(el.herArchiveList.querySelectorAll('.her-row'));
+        Array.prototype.forEach.call(el.herArchiveList.querySelectorAll('.her-row'), function (n) {
+          n.classList.add('entered');
+        });
+      })
+      .catch(function () {});
+  }
+
+  /* ---------- 访问上报 ---------- */
+
+  (function reportVisit() {
+    try {
+      fetch(WORKER_URL + '/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referer: document.referrer || '',
+          language: navigator.language || '',
+          screenSize: window.screen.width + 'x' + window.screen.height,
+          page: location.href
+        })
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+
+  /* ---------- 开屏结束后才启动页面 ---------- */
+
+  document.addEventListener('splash:done', function () {
+    TW.Enter.init(document);
+    boot();
+    loadHerArticle();
+  });
+
+  // 兜底：如果没有 splash（直接删掉了），也要跑
+  if (!document.getElementById('splash')) {
+    TW.Enter.init(document);
+    boot();
+    loadHerArticle();
+  }
+})();
+
+/* ==================== 写点什么（弹窗） ==================== */
+(function () {
+  const modal = document.getElementById('editModal');
+  const lockType = document.getElementById('editLockType');
+  const pwdBox = document.getElementById('editPwdBox');
+  const cancelBtn = document.getElementById('editCancel');
+
+  if (!modal) return;
+
+  function openModal() { modal.classList.add('open'); }
+  function closeModal() {
+    modal.classList.remove('open');
+    const st = document.getElementById('editStatus');
+    if (st) { st.textContent = ''; st.className = 'modal-status'; }
+  }
+
+  lockType.addEventListener('change', function () {
+    pwdBox.hidden = lockType.value !== 'password';
+  });
+
+  cancelBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+  window.__openEditModal = openModal;
+})();
+</script>
+</body>
+</html>

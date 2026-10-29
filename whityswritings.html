@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf8f7">
+<title>whity's writings</title>
+<link rel="preload" href="./fonts/noto-serif-sc-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./assets/css/base.css">
+<style>
+  /* ---- 她的阅读页：紫色体系 ---- */
+  body { background: var(--plum-tint); }
+
+  .w-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--s-6);
+    background: rgba(250, 248, 247, 0.88);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--plum-line);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  body.booted .w-nav { opacity: 1; transform: none; }
+
+  .w-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--plum);
+    text-decoration: none;
+  }
+  .w-brand::before {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: var(--r-pill);
+    background: var(--plum-mid);
+    flex: none;
+  }
+
+  .w-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--plum-mid);
+    text-decoration: none;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-sm);
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+  .w-link:hover { background: var(--plum-soft); color: var(--plum); }
+
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--s-12) var(--s-6) var(--s-24);
+  }
+
+  h1#title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1.22;
+    letter-spacing: -0.4px;
+    color: var(--plum);
+    margin: 0 0 var(--s-3);
+    word-break: break-word;
+    min-height: 1.22em;
+  }
+
+  h1#title::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 0.9em;
+    margin-left: 3px;
+    vertical-align: -0.07em;
+    background: var(--plum-mid);
+    opacity: 0;
+    animation: caret 1.05s steps(1) infinite;
+  }
+  h1#title.typing::after { opacity: 1; }
+  h1#title:empty::after { display: none; }
+  @keyframes caret {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .w-date {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--plum-mid);
+    margin: 0 0 var(--s-8);
+    opacity: 0.85;
+  }
+  .w-date:empty { display: none; }
+  .w-date::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--plum-line);
+  }
+
+  .w-text {
+    font-size: 17px;
+    line-height: 1.9;
+    color: var(--body);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .w-images {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    margin-top: var(--s-8);
+  }
+
+  .w-images figure {
+    margin: 0;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: var(--plum-soft);
+  }
+  .w-images img { display: block; width: 100%; height: auto; }
+
+  /* ---- 锁 ---- */
+  .lock-card {
+    background: var(--plum-soft);
+    border-left: 3px solid var(--plum-mid);
+    border-radius: var(--r-md);
+    padding: var(--s-6);
+    color: var(--plum);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .lock-card .lock-title {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-weight: 500;
+    margin-bottom: var(--s-4);
+  }
+
+  .pwd-row {
+    display: flex;
+    gap: var(--s-2);
+    align-items: center;
+    margin-top: var(--s-3);
+    flex-wrap: wrap;
+  }
+
+  .pwd-row input {
+    flex: 1 1 200px;
+    min-width: 0;
+    height: 40px;
+    padding: 0 var(--s-3);
+    background: var(--canvas);
+    border: 1px solid var(--plum-line);
+    border-radius: var(--r-md);
+    font-size: 15px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .pwd-row input:focus {
+    outline: none;
+    border-color: var(--plum-mid);
+    box-shadow: 0 0 0 3px rgba(139, 95, 160, 0.14);
+  }
+
+  .btn-plum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 var(--s-5);
+    background: var(--plum-mid);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-md);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex: none;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+  .btn-plum:hover { background: var(--plum); }
+  .btn-plum:active { transform: scale(0.985); }
+  .btn-plum:disabled { opacity: 0.5; cursor: default; }
+
+  .pwd-msg {
+    font-size: 13px;
+    color: var(--error);
+    min-height: 1.4em;
+    margin: var(--s-2) 0 0;
+  }
+
+  .w-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--plum-mid);
+    text-decoration: none;
+    padding: var(--s-2) var(--s-3) var(--s-2) 0;
+    margin-bottom: var(--s-6);
+    transition: color 0.15s ease;
+  }
+  .w-back:hover { color: var(--plum); }
+  .w-back svg { width: 15px; height: 15px; flex: none; }
+
+  .w-footer {
+    background: var(--plum);
+    color: rgba(255, 255, 255, 0.62);
+    padding: var(--s-8) var(--s-6);
+    margin-top: var(--s-24);
+    font-size: 13px;
+  }
+  .w-footer .inner {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 767px) {
+    main { padding: var(--s-8) var(--s-5) var(--s-12); }
+    h1#title { font-size: 27px; }
+    .w-text { font-size: 16px; }
+    .w-footer { padding: var(--s-6) var(--s-5); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="w-nav">
+  <a class="w-brand" href="./index.html">whity's writings</a>
+  <a class="w-link" href="./index.html">回日记 →</a>
+</nav>
+
+<main>
+  <a class="w-back" href="./index.html">
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    返回
+  </a>
+
+  <h1 id="title"></h1>
+  <p class="w-date" id="date"></p>
+  <div id="body"><p class="muted">加载中…</p></div>
+</main>
+
+<footer class="w-footer">
+  <div class="inner">
+    <span>whity's writings</span>
+    <span>写给一个人，也写给路过的人。</span>
+  </div>
+</footer>
+
+<script src="./assets/js/motion.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var LOCKED_KEY = 'whity_locked_key_2026';
+
+  var params = new URLSearchParams(location.search);
+  var id = params.get('id');
+
+  var titleEl = document.getElementById('title');
+  var dateEl = document.getElementById('date');
+  var bodyEl = document.getElementById('body');
+
+  /* ---------- 加密工具（与原实现完全一致，保证旧数据能解） ---------- */
+
+  function b64decode(s) {
+    var bin = atob(s);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function deriveKey(password, salt) {
+    var enc = new TextEncoder();
+    return crypto.subtle
+      .importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey'])
+      .then(function (km) {
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+          km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+        );
+      });
+  }
+
+  function decryptText(cipherB64, password, ivB64, saltB64) {
+    return deriveKey(password, b64decode(saltB64)).then(function (key) {
+      return crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: b64decode(ivB64) },
+        key,
+        b64decode(cipherB64)
+      );
+    }).then(function (plain) {
+      return new TextDecoder().decode(plain);
+    });
+  }
+
+  /* ---------- 渲染 ---------- */
+
+  function looksLikeFilename(s) {
+    if (!s) return true;
+    return /\.(jpe?g|png|gif|webp|bmp|svg|heic|avif)$/i.test(String(s).trim());
+  }
+
+  function renderAll(item, plainText) {
+    bodyEl.innerHTML = '';
+
+    var textEl = document.createElement('div');
+    textEl.className = 'w-text';
+    textEl.textContent = plainText || '';
+    textEl.setAttribute('data-enter', '');
+    bodyEl.appendChild(textEl);
+
+    if (Array.isArray(item.images) && item.images.length) {
+      var imgs = document.createElement('div');
+      imgs.className = 'w-images';
+      item.images.forEach(function (im) {
+        if (!im || !im.src) return;
+        var fig = document.createElement('figure');
+        fig.setAttribute('data-enter', 'image');
+        var img = document.createElement('img');
+        img.src = im.src;
+        img.alt = looksLikeFilename(im.alt) ? '' : (im.alt || '');
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        fig.appendChild(img);
+        imgs.appendChild(fig);
+      });
+      bodyEl.appendChild(imgs);
+    }
+
+    TW.Enter.watch(bodyEl.querySelectorAll('[data-enter]'));
+  }
+
+  /* ---------- 锁定态 ---------- */
+
+  function renderLocked(item) {
+    bodyEl.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-title"><span>🔒</span><span>这篇文章被锁起来了。</span></div>' +
+        '<button type="button" class="btn-plum" id="unlockBtn">解锁</button>' +
+      '</div>';
+
+    var btn = document.getElementById('unlockBtn');
+    btn.addEventListener('click', function () {
+      btn.disabled = true;
+      btn.textContent = '解锁中…';
+      decryptText(item.cipher, LOCKED_KEY, item.iv, item.salt)
+        .then(function (plain) {
+          renderAll(item, plain);
+        })
+        .catch(function () {
+          bodyEl.innerHTML = '<p class="muted">解锁失败，可能数据损坏。</p>';
+        });
+    });
+  }
+
+  function renderPassword(item) {
+    bodyEl.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-title"><span>🔑</span><span>这篇文章需要密码。</span></div>' +
+        '<div class="pwd-row">' +
+          '<input type="password" id="pw" placeholder="输入密码查看…" autocomplete="off">' +
+          '<button type="button" class="btn-plum" id="pwBtn">查看</button>' +
+        '</div>' +
+        '<p class="pwd-msg" id="pwMsg"></p>' +
+      '</div>';
+
+    var input = document.getElementById('pw');
+    var btn = document.getElementById('pwBtn');
+    var msg = document.getElementById('pwMsg');
+
+    function tryUnlock() {
+      var v = input.value;
+      if (!v) { msg.textContent = '请输入密码'; return; }
+      btn.disabled = true;
+      btn.textContent = '验证中…';
+      msg.textContent = '';
+      decryptText(item.cipher, v, item.iv, item.salt)
+        .then(function (plain) {
+          renderAll(item, plain);
+        })
+        .catch(function () {
+          msg.textContent = '密码不正确';
+          btn.disabled = false;
+          btn.textContent = '查看';
+          input.select();
+        });
+    }
+
+    btn.addEventListener('click', tryUnlock);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+    });
+    input.focus();
+  }
+
+  /* ---------- 启动 ---------- */
+
+  function load() {
+    if (!id) {
+      bodyEl.innerHTML = '<p class="muted">缺少文章 ID。</p>';
+      return;
+    }
+
+    fetch('./her_article.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var list = Array.isArray(data) ? data : [data];
+        var item = null;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] && list[i].id === id) { item = list[i]; break; }
+        }
+        if (!item) {
+          bodyEl.innerHTML = '<p class="muted">找不到这篇文章。</p>';
+          return;
+        }
+
+        document.title = (item.title || '无题') + " · whity's writings";
+        TW.typeTitle(titleEl, item.title || '无题');
+        dateEl.textContent = item.updatedAt || '';
+
+        if (item.lockType === 'none' || !item.lockType) {
+          renderAll(item, item.text || '');
+        } else if (item.lockType === 'locked') {
+          renderLocked(item);
+        } else if (item.lockType === 'password') {
+          renderPassword(item);
+        }
+      })
+      .catch(function (e) {
+        bodyEl.innerHTML = '<p class="muted">加载失败：' + TW.escapeHtml(e.message) + '</p>';
+      });
+  }
+
+  document.body.classList.add('booted');
+  TW.Enter.init(document);
+  load();
+})();
+</script>
+</body>
+</html>

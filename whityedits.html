@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf8f7">
+<title>whity's desk</title>
+<link rel="preload" href="./fonts/noto-serif-sc-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./assets/css/base.css">
+<style>
+  /* ---- 她的写稿台：紫色体系 ---- */
+  body { background: var(--plum-tint); }
+
+  /* ============ 密码门 ============ */
+  .gate-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--s-6);
+  }
+
+  .gate {
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+
+  .gate .gate-bunny {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    line-height: 1.45;
+    color: var(--plum-mid);
+    margin: 0 0 var(--s-6);
+    white-space: pre;
+    opacity: 0;
+    animation: gateIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+  }
+
+  @keyframes gateIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .gate h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 26px;
+    color: var(--plum);
+    margin: 0 0 var(--s-2);
+    letter-spacing: -0.2px;
+  }
+
+  .gate .hint {
+    font-size: 14px;
+    color: var(--plum-mid);
+    margin: 0 0 var(--s-6);
+  }
+
+  .gate input {
+    width: 100%;
+    height: 44px;
+    padding: 0 var(--s-4);
+    text-align: center;
+    background: var(--canvas);
+    border: 1px solid var(--plum-line);
+    border-radius: var(--r-md);
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .gate input:focus {
+    outline: none;
+    border-color: var(--plum-mid);
+    box-shadow: 0 0 0 3px rgba(139, 95, 160, 0.14);
+  }
+
+  .gate .gate-btn {
+    width: 100%;
+    height: 44px;
+    margin-top: var(--s-3);
+    background: var(--plum-mid);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-md);
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+  .gate .gate-btn:hover { background: var(--plum); }
+  .gate .gate-btn:active { transform: scale(0.99); }
+
+  .gate .gate-msg {
+    font-size: 13px;
+    color: var(--error);
+    min-height: 1.4em;
+    margin: var(--s-3) 0 0;
+  }
+
+  /* ============ 主界面 ============ */
+  .desk-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--s-6);
+    background: rgba(250, 248, 247, 0.9);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--plum-line);
+  }
+
+  .desk-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--plum);
+    text-decoration: none;
+  }
+  .desk-brand::before {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: var(--r-pill);
+    background: var(--plum-mid);
+    flex: none;
+  }
+
+  .desk-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--plum-mid);
+    text-decoration: none;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-sm);
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+  .desk-link:hover { background: var(--plum-soft); color: var(--plum); }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--s-12) var(--s-6) var(--s-24);
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 30px;
+    color: var(--plum);
+    margin: 0 0 var(--s-2);
+    letter-spacing: -0.3px;
+  }
+
+  .page-sub {
+    font-size: 14px;
+    color: var(--plum-mid);
+    margin: 0 0 var(--s-8);
+  }
+
+  /* 卡片 */
+  .card {
+    background: var(--canvas);
+    border: 1px solid var(--plum-line);
+    border-radius: var(--r-lg);
+    padding: var(--s-6);
+    margin-bottom: var(--s-4);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 19px;
+    color: var(--plum);
+    margin: 0;
+  }
+
+  /* 表单 */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--plum-mid);
+    margin: var(--s-4) 0 var(--s-2);
+  }
+
+  input[type=text], input[type=password], textarea, select {
+    width: 100%;
+    background: var(--plum-tint);
+    border: 1px solid var(--plum-line);
+    border-radius: var(--r-md);
+    padding: 10px var(--s-3);
+    font-size: 15px;
+    color: var(--ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  input[type=text], input[type=password], select { height: 42px; }
+  textarea { resize: vertical; line-height: 1.7; min-height: 160px; }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    background: var(--canvas);
+    border-color: var(--plum-mid);
+    box-shadow: 0 0 0 3px rgba(139, 95, 160, 0.14);
+  }
+
+  /* 按钮 */
+  button, .btn-file {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 var(--s-5);
+    border: none;
+    border-radius: var(--r-md);
+    background: var(--plum-mid);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  }
+
+  button:hover, .btn-file:hover { background: var(--plum); }
+  button:active, .btn-file:active { transform: scale(0.985); }
+
+  button.ghost, a.ghost, .btn-file {
+    background: var(--plum-soft);
+    color: var(--plum);
+    text-decoration: none;
+  }
+  button.ghost:hover, a.ghost:hover, .btn-file:hover {
+    background: var(--plum-line);
+    color: var(--plum);
+  }
+
+  button.danger {
+    background: transparent;
+    color: var(--error);
+    border: 1px solid rgba(198, 69, 69, 0.28);
+    padding: 0 var(--s-3);
+  }
+  button.danger:hover {
+    background: rgba(198, 69, 69, 0.08);
+    color: var(--error);
+  }
+
+  .row {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+    margin-top: var(--s-4);
+    align-items: center;
+  }
+
+  /* 列表 */
+  .list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--plum-line);
+    font-size: 14px;
+  }
+  .list-item:last-child { border-bottom: none; }
+
+  .list-item .ttl {
+    color: var(--plum);
+    font-size: 15px;
+    font-weight: 500;
+    word-break: break-word;
+  }
+  .list-item .meta {
+    color: var(--plum-mid);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+    opacity: 0.85;
+  }
+
+  .list-actions {
+    display: flex;
+    gap: var(--s-2);
+    flex: none;
+  }
+
+  /* 图片行 */
+  .img-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--s-2);
+    margin-bottom: var(--s-2);
+    align-items: center;
+  }
+  .img-row input {
+    padding: 8px var(--s-3);
+    font-size: 13px;
+    height: 38px;
+  }
+  .img-row button {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* 状态 */
+  .status {
+    font-size: 13px;
+    color: var(--plum-mid);
+    margin-top: var(--s-3);
+    min-height: 1.4em;
+  }
+  .status.err { color: var(--error); }
+  .status.ok { color: var(--success); }
+
+  #list { margin-top: var(--s-2); }
+
+  .empty {
+    font-size: 13px;
+    color: var(--plum-mid);
+    opacity: 0.8;
+    margin: var(--s-4) 0 0;
+  }
+
+  @media (max-width: 767px) {
+    main { padding: var(--s-8) var(--s-4) var(--s-12); }
+    .page-title { font-size: 25px; }
+    .card { padding: var(--s-4); }
+    .list-item { flex-direction: column; align-items: flex-start; gap: var(--s-2); }
+    .list-actions { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 密码门 ============ -->
+<div id="gate" class="gate-wrap">
+  <div class="gate">
+    <pre class="gate-bunny">(\_/)
+( •_•)
+/ &gt;  ✎</pre>
+    <h1>whity's desk</h1>
+    <p class="hint">写点东西，存进抽屉。</p>
+    <input id="gatePwd" type="password" placeholder="密码" autocomplete="off">
+    <button class="gate-btn" type="button" onclick="checkGate()">进入</button>
+    <p id="gateMsg" class="gate-msg"></p>
+  </div>
+</div>
+
+<!-- ============ 主界面 ============ -->
+<nav class="desk-nav" id="deskNav" style="display:none;">
+  <a class="desk-brand" href="./index.html">whity's desk</a>
+  <a class="desk-link" href="./index.html">回日记 →</a>
+</nav>
+
+<main id="app" style="display:none;">
+  <h1 class="page-title">抽屉</h1>
+  <p class="page-sub">写下来的东西，会安静地待在这里。</p>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 class="card-title">文章</h2>
+      <button class="ghost" type="button" onclick="newArticle()">+ 新一篇</button>
+    </div>
+    <div id="list"><p class="empty">加载中…</p></div>
+  </section>
+
+  <section class="card" id="editor" style="display:none;">
+    <h2 class="card-title" id="editorTitle">新文章</h2>
+
+    <label for="fTitle">标题</label>
+    <input id="fTitle" type="text" placeholder="给这一篇起个名字">
+
+    <label for="fText">正文</label>
+    <textarea id="fText" rows="8" placeholder="从今天开始写…"></textarea>
+
+    <label>图片</label>
+    <div id="imgList"></div>
+    <div class="row">
+      <button class="ghost" type="button" onclick="addImgRow('')">+ 图片地址</button>
+      <label class="btn-file" style="margin:0;">
+        上传图片
+        <input id="fileInput" type="file" accept="image/*" style="display:none;">
+      </label>
+    </div>
+    <div id="uploadStatus" class="status"></div>
+
+    <label for="fLock">加密方式</label>
+    <select id="fLock">
+      <option value="none">不加密（所有人都能看）</option>
+      <option value="locked">直接上锁（只有 gyt 能解锁）</option>
+      <option value="password">设置密码（输对密码就能看）</option>
+    </select>
+
+    <div id="pwdBox" style="display:none;">
+      <label for="fPwd">密码</label>
+      <input id="fPwd" type="text" placeholder="设置一个密码">
+    </div>
+
+    <div class="row">
+      <button type="button" onclick="saveArticle()">存进抽屉</button>
+      <button class="ghost" type="button" onclick="closeEditor()">取消</button>
+      <button class="danger" type="button" id="delBtn" style="display:none;" onclick="deleteArticle()">删除</button>
+    </div>
+    <div id="saveStatus" class="status"></div>
+  </section>
+</main>
+
+<script>
+const ADMIN_PWD = '0108';
+const API_PWD = 'kano1224';
+const WORKER_URL = 'https://empty-bird-fb8b.cedricmeng24.workers.dev';
+const LOCKED_KEY = 'whity_locked_key_2026';
+
+let articles = [];
+let editingId = null;
+
+function b64encode(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function b64decode(s) {
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+async function deriveKey(password, salt, usage) {
+  const enc = new TextEncoder();
+  const km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    km, { name: 'AES-GCM', length: 256 }, false, usage
+  );
+}
+async function encryptText(text, password) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt, ['encrypt']);
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(text));
+  return { cipher: b64encode(new Uint8Array(cipher)), iv: b64encode(iv), salt: b64encode(salt) };
+}
+async function decryptText(cipherB64, password, ivB64, saltB64) {
+  const key = await deriveKey(password, b64decode(saltB64), ['decrypt']);
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: b64decode(ivB64) }, key, b64decode(cipherB64)
+  );
+  return new TextDecoder().decode(plain);
+}
+async function hashPwd(password) {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+  return b64encode(new Uint8Array(hash));
+}
+
+function checkGate() {
+  const v = document.getElementById('gatePwd').value.trim();
+  if (v === ADMIN_PWD) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('deskNav').style.display = 'flex';
+    document.getElementById('app').style.display = 'block';
+    document.body.classList.add('booted');
+    loadList();
+  } else {
+    document.getElementById('gateMsg').textContent = '密码不正确';
+    document.getElementById('gatePwd').value = '';
+    document.getElementById('gatePwd').focus();
+  }
+}
+document.getElementById('gatePwd').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkGate();
+});
+document.getElementById('gatePwd').focus();
+
+async function loadList() {
+  const el = document.getElementById('list');
+  el.innerHTML = '<p class="empty">加载中…</p>';
+  try {
+    const res = await fetch(`${WORKER_URL}/her-list?t=${Date.now()}`);
+    const data = await res.json();
+    articles = Array.isArray(data) ? data : [];
+    if (!articles.length) {
+      el.innerHTML = '<p class="empty">还没写过东西。</p>';
+      return;
+    }
+    el.innerHTML = '';
+    articles.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'list-item';
+
+      const left = document.createElement('div');
+      const ttl = document.createElement('div');
+      ttl.className = 'ttl';
+      ttl.textContent = (a.title || '无标题') + (a.lockType && a.lockType !== 'none' ? ' 🔒' : '');
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = a.updatedAt || '';
+      left.appendChild(ttl);
+      left.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'list-actions';
+
+      const view = document.createElement('a');
+      view.className = 'ghost';
+      view.href = 'whityswritings.html?id=' + encodeURIComponent(a.id);
+      view.target = '_blank';
+      view.rel = 'noopener';
+      view.textContent = '查看';
+
+      const edit = document.createElement('button');
+      edit.className = 'ghost';
+      edit.type = 'button';
+      edit.textContent = '编辑';
+      edit.onclick = () => editArticle(a.id);
+
+      actions.appendChild(view);
+      actions.appendChild(edit);
+
+      div.appendChild(left);
+      div.appendChild(actions);
+      el.appendChild(div);
+    });
+  } catch (e) {
+    el.innerHTML = '<p class="status err">加载失败：' + e.message + '</p>';
+  }
+}
+
+function newArticle() {
+  editingId = null;
+  document.getElementById('editorTitle').textContent = '新文章';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fText').value = '';
+  document.getElementById('fLock').value = 'none';
+  document.getElementById('fPwd').value = '';
+  document.getElementById('pwdBox').style.display = 'none';
+  document.getElementById('imgList').innerHTML = '';
+  document.getElementById('delBtn').style.display = 'none';
+  document.getElementById('saveStatus').textContent = '';
+  document.getElementById('editor').style.display = 'block';
+  window.scrollTo({ top: document.getElementById('editor').offsetTop - 80, behavior: 'smooth' });
+}
+
+async function editArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  editingId = id;
+  document.getElementById('editorTitle').textContent = '编辑文章';
+  document.getElementById('fTitle').value = a.title || '';
+  document.getElementById('fLock').value = a.lockType || 'none';
+  document.getElementById('fPwd').value = '';
+  document.getElementById('pwdBox').style.display = a.lockType === 'password' ? 'block' : 'none';
+  document.getElementById('imgList').innerHTML = '';
+  (a.images || []).forEach(im => addImgRow(im.src || ''));
+  document.getElementById('delBtn').style.display = 'inline-flex';
+  document.getElementById('saveStatus').textContent = '';
+
+  const ta = document.getElementById('fText');
+  if (a.lockType === 'none') {
+    ta.value = a.text || '';
+  } else if (a.lockType === 'locked') {
+    try { ta.value = await decryptText(a.cipher, LOCKED_KEY, a.iv, a.salt); }
+    catch { ta.value = ''; }
+  } else {
+    const pwd = prompt('这篇设了密码，输入密码才能编辑：');
+    if (pwd === null) { ta.value = ''; return; }
+    try { ta.value = await decryptText(a.cipher, pwd, a.iv, a.salt); }
+    catch { alert('密码不对'); ta.value = ''; }
+  }
+
+  document.getElementById('editor').style.display = 'block';
+  window.scrollTo({ top: document.getElementById('editor').offsetTop - 80, behavior: 'smooth' });
+}
+
+function closeEditor() {
+  document.getElementById('editor').style.display = 'none';
+}
+
+function addImgRow(src) {
+  const row = document.createElement('div');
+  row.className = 'img-row';
+  const s = document.createElement('input');
+  s.type = 'text';
+  s.placeholder = '图片地址';
+  s.value = src;
+  s.className = 'img-src';
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'danger';
+  d.textContent = '×';
+  d.title = '移除';
+  d.onclick = () => row.remove();
+  row.append(s, d);
+  document.getElementById('imgList').appendChild(row);
+}
+
+document.getElementById('fileInput').addEventListener('change', async () => {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return;
+  const st = document.getElementById('uploadStatus');
+  st.textContent = '上传中…'; st.className = 'status';
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let bin = ''; const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk)
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    const res = await fetch(`${WORKER_URL}/her-upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminPassword: API_PWD, filename: file.name, content: btoa(bin) })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '失败');
+    addImgRow(data.path);
+    st.textContent = '已上传'; st.className = 'status ok';
+  } catch (e) {
+    st.textContent = '失败：' + e.message; st.className = 'status err';
+  } finally {
+    document.getElementById('fileInput').value = '';
+  }
+});
+
+async function saveArticle() {
+  const st = document.getElementById('saveStatus');
+  const title = document.getElementById('fTitle').value.trim();
+  const text = document.getElementById('fText').value.trim();
+  const lockType = document.getElementById('fLock').value;
+  const userPwd = document.getElementById('fPwd').value.trim();
+
+  const images = [];
+  document.querySelectorAll('#imgList .img-row').forEach(row => {
+    const src = row.querySelector('.img-src').value.trim();
+    if (src) images.push({ src, alt: '' });
+  });
+
+  if (!title && !text && !images.length) {
+    st.textContent = '居然选择什么都不写嘛！'; st.className = 'status err'; return;
+  }
+
+  st.textContent = '保存中…'; st.className = 'status';
+
+  try {
+    const payload = {
+      adminPassword: API_PWD,
+      id: editingId,
+      title,
+      images,
+      lockType,
+      _plain: text,
+      _pwd: ''
+    };
+
+    if (lockType === 'none') {
+      payload.text = text;
+      payload.cipher = '';
+      payload.iv = '';
+      payload.salt = '';
+      payload.pwdHash = '';
+    } else {
+      const realPwd = lockType === 'locked' ? LOCKED_KEY : (userPwd || 'loveyou');
+      const enc = await encryptText(text, realPwd);
+      payload.text = '';
+      payload.cipher = enc.cipher;
+      payload.iv = enc.iv;
+      payload.salt = enc.salt;
+      payload.pwdHash = await hashPwd(realPwd);
+      payload._pwd = lockType === 'locked' ? '【自动上锁】' : (userPwd || 'loveyou');
+    }
+
+    const res = await fetch(`${WORKER_URL}/her-save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '失败');
+
+    st.textContent = '已存进抽屉 ✒'; st.className = 'status ok';
+    setTimeout(() => { closeEditor(); loadList(); }, 1200);
+  } catch (e) {
+    st.textContent = '失败：' + e.message; st.className = 'status err';
+  }
+}
+
+async function deleteArticle() {
+  if (!editingId) return;
+  if (!confirm('确定删除这一篇吗？')) return;
+  const st = document.getElementById('saveStatus');
+  st.textContent = '删除中…'; st.className = 'status';
+  try {
+    const res = await fetch(`${WORKER_URL}/her-delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editingId, adminPassword: API_PWD })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '失败');
+    st.textContent = '已删除'; st.className = 'status ok';
+    setTimeout(() => { closeEditor(); loadList(); }, 800);
+  } catch (e) {
+    st.textContent = '失败：' + e.message; st.className = 'status err';
+  }
+}
+
+document.getElementById('fLock').addEventListener('change', (e) => {
+  document.getElementById('pwdBox').style.display = e.target.value === 'password' ? 'block' : 'none';
+});
+</script>
+</body>
+</html>
