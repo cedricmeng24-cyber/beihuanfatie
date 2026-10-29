@@ -272,8 +272,8 @@
 
 <footer class="w-footer">
   <div class="inner">
-    <span>whity's writings</span>
-    <span>写给一个人，也写给路过的人。</span>
+    <span>Whity's writings</span>
+    <span>You are the only constant.</span>
   </div>
 </footer>
 
@@ -448,8 +448,8 @@
           return;
         }
 
-        document.title = (item.title || '无题') + " · whity's writings";
-        TW.typeTitle(titleEl, item.title || '无题');
+        document.title = (item.title || '无标题') + " · whity's writings";
+        TW.typeTitle(titleEl, item.title || '无标题');
         dateEl.textContent = item.updatedAt || '';
 
         if (item.lockType === 'none' || !item.lockType) {
