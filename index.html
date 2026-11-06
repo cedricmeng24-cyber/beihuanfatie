@@ -154,11 +154,15 @@
     } catch (e) { return ''; }
   }
 
-  function prettyDate(s) {
-    var m = String(s || '').match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
-    if (!m) return s || '';
-    return m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日';
-  }
+function prettyDate(s) {
+  var m = String(s || '').match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if (!m) return s || '';
+
+  var date = m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日';
+  var time = m[4] ? ' ' + m[4].padStart(2, '0') + ':' + m[5] : '';
+
+  return date + time;
+}
 
   /* ---------- 正文渲染 ---------- */
 
