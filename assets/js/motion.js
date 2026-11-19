@@ -78,7 +78,7 @@
   /* ========================================================================
      2. 打字机标题
      ======================================================================== */
-  function typeTitle(el, text, after) {
+  function typeTitle(el, text, after, isCurrent) {
     if (!el) { if (after) after(); return; }
     if (reduceMotion) {
       el.textContent = text;
@@ -93,6 +93,7 @@
     var speed = text.length > 22 ? 32 : 46;   // 长标题稍快
 
     function step() {
+      if (isCurrent && (!isCurrent() || !el.classList.contains('typing'))) return;
       if (i >= text.length) {
         el.classList.remove('typing');
         if (after) after();
