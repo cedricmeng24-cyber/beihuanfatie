@@ -216,6 +216,8 @@
     border-bottom: 1px solid var(--hairline);
   }
 
+  .post-month > summary { cursor: pointer; }
+
   /* ---- 错误横幅 ---- */
   #errorBanner {
     display: none;
@@ -447,7 +449,8 @@
       <button id="savePostBtn">保存文章</button>
       <button id="cancelEditBtn" class="ghost">清空/新建</button>
     </div>
-    <p id="savePostStatus" class="status"></p>
+    <p id="savePostStatus" class="status" role="status"></p>
+    <div id="indexRecovery"></div>
   </section>
 
   <section class="card">
@@ -569,6 +572,7 @@
     var savePostBtn = need('savePostBtn');
     var cancelEditBtn = need('cancelEditBtn');
     var savePostStatus = need('savePostStatus');
+    var indexRecoveryEl = need('indexRecovery');
 
     var loadCommentsBtn = need('loadCommentsBtn');
     var commentAdminStatus = need('commentAdminStatus');
@@ -582,10 +586,14 @@
     var owner = '', repo = '', branch = 'main', token = '';
     var posts = [];
     var currentPostId = '';
+    var editorRequest = 0;
+    var publishing = false;
+    var pendingIndex = new Map();
 
     /* ---------- GitHub 底层 ---------- */
 
     function readConfig() {
+      if (publishing) return;
       owner = ownerEl.value.trim();
       repo = repoEl.value.trim();
       branch = branchEl.value.trim() || 'main';
@@ -707,21 +715,19 @@
       var file = await getFile('posts/index.json');
       if (!file) return { list: [], sha: null };
 
-      var list;
-      try { list = JSON.parse(file.text); } catch (e) { list = []; }
-      if (!Array.isArray(list)) list = [];
+      var list = JSON.parse(file.text);
+      if (!Array.isArray(list)) throw new Error('文章索引格式有误，请先重建索引。');
 
       return { list: list, sha: file.sha };
     }
 
-    async function writeIndex(list) {
+    async function writeIndex(list, sha) {
       list.sort(function (a, b) { return String(b.id).localeCompare(String(a.id)); });
-      var file = await getFile('posts/index.json');
       await putTextFile(
         'posts/index.json',
         JSON.stringify(list, null, 2),
         'Update posts index',
-        file ? file.sha : null
+        sha
       );
       posts = list;
     }
@@ -745,12 +751,12 @@
       var idx = await readIndex();
       var list = idx.list.filter(function (x) { return x && x.id !== post.id; });
       list.push(indexEntryFromPost(post));
-      await writeIndex(list);
+      await writeIndex(list, idx.sha);
     }
 
     async function removeFromIndex(id) {
       var idx = await readIndex();
-      await writeIndex(idx.list.filter(function (x) { return x && x.id !== id; }));
+      await writeIndex(idx.list.filter(function (x) { return x && x.id !== id; }), idx.sha);
     }
 
     /* ---------- 文章表单 ---------- */
@@ -806,6 +812,8 @@
     }
 
     function startNew() {
+      if (publishing) return;
+      editorRequest++;
       currentPostId = '';
       fillEditor({ title: '', text: '', images: [] });
       editHint.textContent = '当前：新建文章（保存时会生成一个按时间排序的 ID）';
@@ -814,7 +822,9 @@
     }
 
     async function startEdit(id) {
+      if (publishing) return;
       requireConfig();
+      var request = ++editorRequest;
       setStatus(savePostStatus, '正在读取文章...');
       try {
         var file = await getFile('posts/' + id + '.json');
@@ -823,26 +833,93 @@
         var post;
         try { post = JSON.parse(file.text); } catch (e) { throw new Error('文章文件不是合法 JSON'); }
 
+        if (request !== editorRequest) return;
         currentPostId = id;
         fillEditor(post);
         editHint.textContent = '当前：编辑 ' + id + '（' + (post.date || '') + '）';
         setStatus(savePostStatus, '已载入，可以修改后保存。');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
-        setStatus(savePostStatus, '读取失败：' + err.message, true);
+        if (request === editorRequest) setStatus(savePostStatus, '读取失败：' + err.message, true);
+      }
+    }
+
+    function repositoryKey() {
+      return owner.toLowerCase() + '/' + repo.toLowerCase() + '@' + branch;
+    }
+
+    function renderIndexRecovery() {
+      indexRecoveryEl.textContent = '';
+      pendingIndex.forEach(function (entry) {
+        if (entry.target !== repositoryKey()) return;
+        var row = document.createElement('p');
+        row.className = 'status error';
+        row.append('正文已保存，索引更新失败（' + entry.id + '）。 ');
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'ghost';
+        button.textContent = '重试索引';
+        button.disabled = publishing;
+        button.addEventListener('click', function () { retryIndex(entry); });
+        row.appendChild(button);
+        indexRecoveryEl.appendChild(row);
+      });
+    }
+
+    function setPublishing(active) {
+      publishing = active;
+      savePostBtn.disabled = active;
+      connectBtn.disabled = active;
+      renderIndexRecovery();
+    }
+
+    async function publishIndex(entry, post) {
+      await upsertIndex(post);
+      pendingIndex.delete(entry.key);
+      renderPostList();
+      setStatus(postListStatus, '共 ' + posts.length + ' 篇文章。');
+      setStatus(savePostStatus, '发布成功。GitHub Pages 稍后会更新前台。');
+    }
+
+    async function retryIndex(entry) {
+      if (publishing) return;
+      try {
+        requireConfig();
+        if (entry.target !== repositoryKey()) throw new Error('请连接原来的仓库和分支后重试。');
+        setPublishing(true);
+        setStatus(savePostStatus, '正在重试索引...');
+        var file = await getFile('posts/' + entry.id + '.json');
+        if (!file) throw new Error('文章文件已不存在。');
+        var post = JSON.parse(file.text);
+        post.id = entry.id;
+        await publishIndex(entry, post);
+      } catch (err) {
+        setStatus(savePostStatus, '索引重试失败：' + err.message, true);
+      } finally {
+        setPublishing(false);
       }
     }
 
     async function saveCurrent() {
-      requireConfig();
-      setStatus(savePostStatus, '正在保存...');
-
+      if (publishing) return;
+      var saved = false;
       try {
+        requireConfig();
+        editorRequest++;
+        setPublishing(true);
+        setStatus(savePostStatus, '正在保存...');
         var isNew = !currentPostId;
-        var id = currentPostId || makeId(new Date());
+        var now = new Date();
+        var id = currentPostId || makeId(now);
         var path = 'posts/' + id + '.json';
 
+        var draft = {
+          title: titleEl.value.trim(),
+          text: textEl.value,
+          images: collectImages()
+        };
         var existing = await getFile(path);
+        if (!isNew && !existing) throw new Error('原文章文件已不存在。');
 
         if (isNew && existing) {
           id = id + '-' + Math.random().toString(36).slice(2, 6);
@@ -852,26 +929,30 @@
 
         var post = {
           id: id,
-          title: titleEl.value.trim(),
-          text: textEl.value,
-          images: collectImages(),
-          date: formatDate(new Date())
+          title: draft.title,
+          text: draft.text,
+          images: draft.images,
+          date: isNew ? formatDate(now) : JSON.parse(existing.text).date
         };
 
         await putTextFile(path, JSON.stringify(post, null, 2), 'Save post ' + id, existing ? existing.sha : null);
-        await upsertIndex(post);
-
+        saved = true;
         currentPostId = id;
         editHint.textContent = '当前：编辑 ' + id;
-        await refreshList();
-
-        setStatus(savePostStatus, '保存成功。GitHub Pages 需要几十秒到几分钟才会更新前台。');
+        var target = repositoryKey();
+        var entry = { target: target, id: id, key: target + '/' + id };
+        pendingIndex.set(entry.key, entry);
+        await publishIndex(entry, post);
       } catch (err) {
-        setStatus(savePostStatus, '保存失败：' + err.message, true);
+        var message = saved ? '正文已保存，索引更新失败：' : '正文保存失败：';
+        setStatus(savePostStatus, message + err.message, true);
+      } finally {
+        setPublishing(false);
       }
     }
 
     async function deletePost(id) {
+      if (publishing) return;
       requireConfig();
 
       if (!confirm('确定删除文章 ' + id + '？评论还会留在后台，需另外清理。')) return;
@@ -881,6 +962,8 @@
         if (!file) throw new Error('文章文件不存在');
 
         await deleteFile('posts/' + id + '.json', 'Delete post ' + id, file.sha);
+        pendingIndex.delete(repositoryKey() + '/' + id);
+        renderIndexRecovery();
         await removeFromIndex(id);
 
         if (currentPostId === id) startNew();
@@ -936,6 +1019,10 @@
     }
 
     function renderPostList() {
+      var previousMonths = new Map();
+      postListEl.querySelectorAll('.post-month').forEach(function (section) {
+        previousMonths.set(section.dataset.month, section.open);
+      });
       postListEl.innerHTML = '';
 
       if (!posts.length) {
@@ -947,22 +1034,28 @@
       var order = [];
 
       posts.forEach(function (p) {
-        var m = p.month || monthOf(p.id);
+        var dateMonth = /^\d{4}-(?:0[1-9]|1[0-2])(?=-)/.exec(p.date || '');
+        var m = dateMonth ? dateMonth[0] : (p.month || monthOf(p.id));
         if (!groups[m]) { groups[m] = []; order.push(m); }
         groups[m].push(p);
       });
 
       order.sort().reverse();
 
-      order.forEach(function (m) {
-        var head = document.createElement('div');
+      order.forEach(function (m, index) {
+        var section = document.createElement('details');
+        section.className = 'post-month';
+        section.dataset.month = m;
+        section.open = previousMonths.has(m) ? previousMonths.get(m) : index === 0;
+        var head = document.createElement('summary');
         head.className = 'month-head';
-        head.textContent = monthLabel(m) + '（' + groups[m].length + '）';
-        postListEl.appendChild(head);
+        head.textContent = monthLabel(m) + '（' + groups[m].length + ' 篇）';
+        section.appendChild(head);
 
         groups[m].forEach(function (p) {
-          postListEl.appendChild(renderPostRow(p));
+          section.appendChild(renderPostRow(p));
         });
+        postListEl.appendChild(section);
       });
     }
 
@@ -982,6 +1075,7 @@
     /* ---------- 重建索引 ---------- */
 
     async function rebuildIndex() {
+      if (publishing) return;
       requireConfig();
 
       if (!confirm('用仓库里 posts/ 目录的实际文件重建索引？会用文件内容覆盖 index.json。')) return;
@@ -989,13 +1083,15 @@
       setStatus(postListStatus, '正在扫描 posts/ 目录...');
 
       try {
+        var previousIndex = await getFile('posts/index.json');
+        var sha = previousIndex ? previousIndex.sha : null;
         var files = await listDir('posts');
         var jsonFiles = files.filter(function (f) {
           return f.type === 'file' && /\.json$/.test(f.name) && f.name !== 'index.json';
         });
 
         if (!jsonFiles.length) {
-          await writeIndex([]);
+          await writeIndex([], sha);
           renderPostList();
           setStatus(postListStatus, 'posts/ 里没有文章文件。');
           return;
@@ -1024,7 +1120,7 @@
           });
         }
 
-        await writeIndex(entries);
+        await writeIndex(entries, sha);
         renderPostList();
         setStatus(postListStatus, '索引已重建，共 ' + entries.length + ' 篇。');
       } catch (err) {
@@ -1035,6 +1131,7 @@
     /* ---------- 导入旧 content.json ---------- */
 
     async function importLegacy() {
+      if (publishing) return;
       requireConfig();
 
       if (!confirm('把 content.json 当成一篇文章导入？')) return;
@@ -1300,7 +1397,9 @@
     /* ---------- 事件绑定 ---------- */
 
     connectBtn.addEventListener('click', async function () {
+      if (publishing) return;
       readConfig();
+      renderIndexRecovery();
 
       if (!owner || !repo || !token) {
         setStatus(connStatus, '请填写 owner、repo 和 token。', true);

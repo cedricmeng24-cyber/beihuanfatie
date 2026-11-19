@@ -133,6 +133,9 @@
   var posts = [];
   var currentPostId = '';
   var pageReady = false;
+  var postRequest = 0;
+  var commentsRequest = 0;
+  var commentSubmission = 0;
 
   /* ---------- 工具 ---------- */
 
@@ -174,10 +177,12 @@ function prettyDate(s) {
 
     // 标题：第一次进来打字机，切换文章直接换
     if (animate) {
+      var view = postRequest;
       TW.typeTitle(el.title, post.title || '(无标题)', function () {
         restartEnter(el.text);
-      });
+      }, function () { return view === postRequest; });
     } else {
+      el.title.classList.remove('typing');
       el.title.textContent = post.title || '(无标题)';
       restartEnter(el.text);
     }
@@ -285,6 +290,8 @@ function prettyDate(s) {
   }
 
   function loadComments() {
+    var view = postRequest;
+    var request = ++commentsRequest;
     if (!currentPostId) {
       el.commentList.innerHTML = '<p class="muted">还没有文章，无法留言。</p>';
       return;
@@ -292,15 +299,17 @@ function prettyDate(s) {
 
     el.commentList.innerHTML = '<p class="muted">正在加载留言…</p>';
 
-    fetch(WORKER_URL + '/comments?post=' + encodeURIComponent(currentPostId) + '&_=' + Date.now())
+    return fetch(WORKER_URL + '/comments?post=' + encodeURIComponent(currentPostId) + '&_=' + Date.now())
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       })
       .then(function (list) {
+        if (view !== postRequest || request !== commentsRequest) return;
         renderComments(Array.isArray(list) ? list : []);
       })
       .catch(function () {
+        if (view !== postRequest || request !== commentsRequest) return;
         el.commentList.innerHTML = '<p class="muted">留言加载失败。</p>';
       });
   }
@@ -312,8 +321,17 @@ function prettyDate(s) {
     el.backLink.hidden = !posts.length || isNewest;
   }
 
-  function showPost(id) {
+  function selectPost(id) {
     currentPostId = id;
+    if (el.notice) el.notice.hidden = true;
+    el.commentSubmit.disabled = false;
+    el.commentStatus.textContent = '';
+    el.commentStatus.className = '';
+    return ++postRequest;
+  }
+
+  function showPost(id) {
+    var request = selectPost(id);
     updateBackLink();
     renderArchive();
     loadComments();
@@ -332,10 +350,10 @@ function prettyDate(s) {
         return res.json();
       })
       .then(function (full) {
-        renderPost(full, false);
+        if (request === postRequest) renderPost(full, false);
       })
       .catch(function () {
-        showNotice('文章正文加载失败，请稍后刷新页面。');
+        if (request === postRequest) showNotice('文章正文加载失败，请稍后刷新页面。');
       });
   }
 
@@ -346,7 +364,7 @@ function prettyDate(s) {
   }
 
   function loadLegacy() {
-    currentPostId = 'legacy';
+    var request = selectPost('legacy');
     el.backLink.hidden = true;
     renderArchive();
 
@@ -356,6 +374,7 @@ function prettyDate(s) {
         return res.json();
       })
       .then(function (data) {
+        if (request !== postRequest) return;
         renderPost({
           title: data.title,
           text: data.text,
@@ -365,10 +384,11 @@ function prettyDate(s) {
         pageReady = true;
       })
       .catch(function () {
+        if (request !== postRequest) return;
         renderPost({ title: '暂无内容', text: '后台还没有发布文章。' }, false);
       })
       .then(function () {
-        loadComments();
+        if (request === postRequest) loadComments();
       });
   }
 
@@ -403,6 +423,8 @@ function prettyDate(s) {
     var content = el.commentText.value.trim();
     if (!content || !currentPostId) return;
 
+    var view = postRequest;
+    var submission = ++commentSubmission;
     el.commentSubmit.disabled = true;
     el.commentStatus.textContent = '发送中…';
     el.commentStatus.className = '';
@@ -419,18 +441,22 @@ function prettyDate(s) {
       .then(function (res) {
         if (res.status === 429) throw new Error('发送太频繁，稍后再试。');
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (view !== postRequest) return;
         el.commentText.value = '';
         el.commentStatus.textContent = '已发送。';
         el.commentStatus.className = 'ok';
         return loadComments();
       })
       .catch(function (err) {
+        if (view !== postRequest) return;
         el.commentStatus.textContent = '发送失败：' + err.message;
         el.commentStatus.className = 'error';
       })
       .then(function () {
+        if (view !== postRequest) return;
         el.commentSubmit.disabled = false;
         setTimeout(function () {
+          if (view !== postRequest || submission !== commentSubmission) return;
           el.commentStatus.textContent = '';
           el.commentStatus.className = '';
         }, 3000);
